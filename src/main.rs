@@ -20,24 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-extern crate libc;
 
-use libc::c_char;
-use std::ffi::CStr;
-use std::str;
-
-#[link(name = "speedtest", kind = "static")]
-extern "C" {
-    fn test_speed() -> *const c_char;
-}
+use std::process::Command;
 
 fn main() {
-    println!("Hello, world!");
-    let c_buf: *const c_char = unsafe { test_speed() };
-    let c_str: &CStr = unsafe { CStr::from_ptr(c_buf) };
-    let str_slice: &str = c_str.to_str().unwrap();
-    let str_buf: String = str_slice.to_owned();  // if necessary
+    let output = Command::new("./SpeedTest/speedtestJson")
+                         .output()
+                         .expect("failed to execute process");
 
-    println!("{:?}", str_buf)
+    println!("status: {}", output.status);
+    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
+    assert!(output.status.success());
 }
