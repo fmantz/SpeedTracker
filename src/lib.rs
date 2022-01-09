@@ -132,6 +132,14 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
     let pastday: NaiveDate = past.naive_local().date();
     let first_filter_file_name: String = get_data_file_name(&pastday);
 
+    //do some checks first:
+    if !check_path_full_access(Path::new(&config.data_dir))
+        | !check_file_full_access(Path::new(&new_data_file))
+        | !check_file_full_access(Path::new(&config.output_file))
+    {
+        panic!("PLEASE CORRECT CONFIG!");
+    }
+
     let rs = Setup {
         data_dir: config.data_dir,
         new_data_file: Some(new_data_file),
@@ -141,12 +149,6 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
         to_date: today,
         output_file: config.output_file,
     };
-
-    if check_path_full_access(Path::new(&rs.data_dir))
-        | check_path_full_access(Path::new(&rs.output_file))
-    {
-        panic!("PLEASE CORRECT CONFIG!");
-    }
 
     rs
 }
@@ -172,6 +174,25 @@ fn check_path_full_access(path: &Path) -> bool {
     if !path.writable() {
         error!("No write permission on path: {}", path.display());
         rs = false;
+    }
+    rs
+}
+
+fn check_file_full_access(file: &Path) -> bool {
+    let dir = match file.parent() {
+        Some(d) => d,
+        None => {
+            error!("File has an invalid path: {}", file.display());
+            return false;
+        }
+    };
+    let mut rs = check_path_full_access(dir);
+    if rs {
+        if file.exists() {
+            if !file.writable() {
+                error!("No write permission for file: {}", file.display());
+            }
+        }
     }
     rs
 }
