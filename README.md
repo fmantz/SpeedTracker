@@ -7,7 +7,7 @@ The program 'speedTracker' will have two modes:
 - a mode for producing data periodically via a cron job and generating the output at a fixed location:
 
 ```bash
-speedTracker run
+speedtracker run
 ```
 
 It will do:
@@ -26,7 +26,7 @@ It will do:
 - a mode to produce a self a self-containing html.page at a given location (without calling speedtestJson):
 
 ```bash
-speedTracker ./index.html 2022-01-01 2021-12-31
+speedtracker ./index.html 2022-01-01 2021-12-31
 ```
 
 1. parse following parameter from command line by position (as in the example above):

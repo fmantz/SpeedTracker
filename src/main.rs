@@ -21,8 +21,8 @@
 // SOFTWARE.
 //
 
-use mylib::test;
+use mylib::*;
 
 fn main() {
-    test();
+    run_speed_test();
 }
