@@ -72,6 +72,14 @@ pub struct Setup {
     output_file: String,
 }
 
+impl Setup {
+    pub fn maybe_speed_test(&self) {
+        if let Some(f) = &self.new_data_file {
+            run_speed_test(Path::new(&f));
+        }
+    }
+}
+
 impl ::std::default::Default for Config {
     fn default() -> Self {
         Self {
@@ -202,16 +210,16 @@ fn get_data_file_name(date: &NaiveDate) -> String {
 
 fn check_path_full_access(path: &Path) -> bool {
     if !path.exists() {
-        error!("Path does not exists: {}", path.display());
+        error!("Path does not exists: {:?}", path);
         return false;
     }
     let mut rs = true;
     if !path.readable() {
-        error!("No read permission on path: {}", path.display());
+        error!("No read permission on path: {:?}", path);
         rs = false;
     }
     if !path.writable() {
-        error!("No write permission on path: {}", path.display());
+        error!("No write permission on path: {:?}", path);
         rs = false;
     }
     rs
@@ -221,7 +229,7 @@ fn check_file_full_access(file: &Path) -> bool {
     let dir = match file.parent() {
         Some(d) => d,
         None => {
-            error!("File has an invalid path: {}", file.display());
+            error!("File has an invalid path: {:?}", file);
             return false;
         }
     };
@@ -229,14 +237,14 @@ fn check_file_full_access(file: &Path) -> bool {
     if rs {
         if file.exists() {
             if !file.writable() {
-                error!("No write permission for file: {}", file.display());
+                error!("No write permission for file: {:?}", file);
             }
         }
     }
     rs
 }
 
-pub fn run_speed_test(output_file: &Path) {
+fn run_speed_test(output_file: &Path) {
     let start: Instant = Instant::now();
     let output_rs = Command::new(SPEED_TEST_CMD).output();
     let stop: Instant = Instant::now();

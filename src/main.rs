@@ -22,16 +22,45 @@
 //
 
 use mylib::*;
+use std::env;
+use std::process;
+
+const PROGRAM_NAME: &'static str = "speedtracker";
+const SUCCESS: i32 = 0;
 
 fn main() {
-    let config = read_config();
+    let args: Vec<String> = env::args().collect();
+    let args_len = args.len();
+    if args_len != 1 && args_len != 3 {
+        print_usage();
+        process::exit(SUCCESS);
+    } else {
+        let config = read_config();
 
-    init_logger(&config);
+        init_logger(&config);
 
-    //println!("{:?}", config_to_setup_for_mode_1(config));
+        //decide setup by command line arguments:
+        let setup = match args_len {
+            1 if args[0].eq("run") => config_to_setup_for_mode_1(config),
+            3 => config_to_setup_for_mode_2(config, &args[0], &args[1], &args[2]),
+            _ => {
+                print_usage();
+                process::exit(SUCCESS);
+            }
+        };
 
-    println!(
-        "{:?}",
-        config_to_setup_for_mode_2(config, "2021-12-31", "2022-01-01", "./test.html")
-    );
+        setup.maybe_speed_test();
+
+        //parse && filter data
+
+        //write output
+    }
+}
+
+fn print_usage() {
+    println!("FOR MODE 1 'speedtest + standard.html generation' run:");
+    println!("{} run\n", PROGRAM_NAME);
+    println!("FOR MODE 2: 'only' output generation run:");
+    println!("{} from_date to_date output_file\n", PROGRAM_NAME);
+    println!("e.g. {} 2022-01-01 2021-12-31 ./index.html\n", PROGRAM_NAME);
 }
