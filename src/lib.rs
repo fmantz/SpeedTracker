@@ -23,19 +23,59 @@
 use std::process::Command;
 use std::time::Instant;
 use serde::{Deserialize, Serialize};
+use chrono::NaiveDate;
 
 const SPEED_TEST_CMD: &str = "./SpeedTest/speedtestJson";
 const _CONFIG_FILENAME: &str = "speedtracker.toml";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config{
-  todo: String
+  /// directory where data is collected
+  data_dir                  : String,
+  /// should be on a path served by a webserver (apache e.g.)
+  output_file               : String,
+  /// number of days in the past (from today) the data should be visualized
+  output_xdays              : u32,
+  /// log file path and name
+  log_file                  : String,
+  /// maximal size of log file in kb before the file is rotated
+  log_file_max_length_in_kb : u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Setup{
-  todo: String
+  /// directory where data is collected
+  data_dir                : String,
+  /// new results should be appended to this file
+  new_data_file           : Option<String>,
+  /// first file name with relevant data e.g. '2022-01.json'
+  first_filter_file_name  : String,
+  /// last file name with relevant data e.g. '2022-02.json'
+  last_filter_file_name   : String,
+  /// start date from which the data should be vizualized
+  from_date               : NaiveDate,
+  /// end date from which the data should be vizualized
+  to_date                 : NaiveDate,
+  /// should be on a path served by a webserver (apache e.g.)
+  output_file             : String,
 }
+
+/// good defaults for the log file, note password must be set!
+impl ::std::default::Default for Config {
+    fn default() -> Self {
+        Self {
+            data_dir     : String::from("./data"),
+            output_file  : String::from("./index.html"),
+            /// two weeks
+            output_xdays : 14,
+            /// standard log directory
+            log_file: String::from("/var/log/speedtracker.log"),
+            /// maximal size of log file in kb before the file is rotated
+            log_file_max_length_in_kb: 8096,
+        }
+    }
+}
+
 
 pub fn read_config() -> Result<Config, String> {
    //TODO
