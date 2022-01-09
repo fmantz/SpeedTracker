@@ -23,4 +23,5 @@ Cargo.lock
 # Added by cargo
 
 /target
+/data/2*
 

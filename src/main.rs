@@ -31,7 +31,8 @@ const SUCCESS: i32 = 0;
 fn main() {
     let args: Vec<String> = env::args().collect();
     let args_len = args.len();
-    if args_len != 1 && args_len != 3 {
+
+    if args_len != 2 && args_len != 4 {
         print_usage();
         process::exit(SUCCESS);
     } else {
@@ -41,8 +42,8 @@ fn main() {
 
         //decide setup by command line arguments:
         let setup = match args_len {
-            1 if args[0].eq("run") => config_to_setup_for_mode_1(config),
-            3 => config_to_setup_for_mode_2(config, &args[0], &args[1], &args[2]),
+            2 if &args[1] == "run" => config_to_setup_for_mode_1(config),
+            4 => config_to_setup_for_mode_2(config, &args[1], &args[2], &args[3]),
             _ => {
                 print_usage();
                 process::exit(SUCCESS);
