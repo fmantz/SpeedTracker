@@ -140,7 +140,7 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
         panic!("PLEASE CORRECT CONFIG!");
     }
 
-    let rs = Setup {
+    Setup {
         data_dir: config.data_dir,
         new_data_file: Some(new_data_file),
         first_filter_file_name: first_filter_file_name,
@@ -148,14 +148,45 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
         from_date: pastday,
         to_date: today,
         output_file: config.output_file,
-    };
-
-    rs
+    }
 }
 
-//pub fn config_to_setup_for_mode_2(config: &Config, output_file: &str, from_date: &str, to_date: &str) -> Setup {
-//    //TODO
-//}
+pub fn config_to_setup_for_mode_2(
+    config: Config,
+    from_date: &str,
+    to_date: &str,
+    output_file: &str,
+) -> Setup {
+    //note: console errors are ok here since it is used as console command:
+    let from_date_as_nd = NaiveDate::parse_from_str(from_date, "%Y-%m-%d").expect(&format!(
+        "Invalid date format: {} (e.g. 2022-01-15)",
+        from_date
+    ));
+    let to_date_as_nd = NaiveDate::parse_from_str(to_date, "%Y-%m-%d").expect(&format!(
+        "Invalid date format: {} (e.g. 2022-01-15)",
+        to_date
+    ));
+
+    if from_date_as_nd > to_date_as_nd {
+        panic!(
+            "from_date > to_date,  {} > {} ",
+            from_date_as_nd, to_date_as_nd
+        );
+    }
+
+    let first_filter_file_name = get_data_file_name(&from_date_as_nd);
+    let last_filter_file_name = get_data_file_name(&to_date_as_nd);
+
+    Setup {
+        data_dir: config.data_dir,
+        new_data_file: None,
+        first_filter_file_name: first_filter_file_name,
+        last_filter_file_name: last_filter_file_name,
+        from_date: from_date_as_nd,
+        to_date: to_date_as_nd,
+        output_file: output_file.to_string(),
+    }
+}
 
 fn get_data_file_name(date: &NaiveDate) -> String {
     date.format("%Y-%m-DATA.json").to_string()
@@ -197,7 +228,7 @@ fn check_file_full_access(file: &Path) -> bool {
     rs
 }
 
-pub fn run_speed_test() {
+pub fn run_speed_test(output_file: &Path) {
     let start: Instant = Instant::now();
     let output_rs = Command::new(SPEED_TEST_CMD).output();
     let stop: Instant = Instant::now();

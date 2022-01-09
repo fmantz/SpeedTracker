@@ -28,5 +28,10 @@ fn main() {
 
     init_logger(&config);
 
-    println!("{:?}", config_to_setup_for_mode_1(config));
+    //println!("{:?}", config_to_setup_for_mode_1(config));
+
+    println!(
+        "{:?}",
+        config_to_setup_for_mode_2(config, "2021-12-31", "2022-01-01", "./test.html")
+    );
 }

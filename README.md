@@ -26,7 +26,7 @@ It will do:
 - a mode 2 to produce a self a self-containing html.page at a given location (without calling speedtestJson):
 
 ```bash
-speedtracker ./index.html 2022-01-01 2021-12-31
+speedtracker 2022-01-01 2021-12-31 ./index.html
 ```
 
 1. parse following parameter from command line by position (as in the example above):
