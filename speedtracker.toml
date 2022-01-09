@@ -1,0 +1,5 @@
+data_dir = './data'
+output_file = './index.html'
+output_xdays = 14
+log_file = './speedtracker.log'
+log_file_max_length_in_kb = 8096

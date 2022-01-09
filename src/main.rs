@@ -24,5 +24,9 @@
 use mylib::*;
 
 fn main() {
-    run_speed_test();
+    let config = read_config();
+
+    init_logger(&config);
+
+    println!("{:?}", config_to_setup_for_mode_1(config));
 }

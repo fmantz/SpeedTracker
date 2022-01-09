@@ -4,7 +4,7 @@ purpose: track and visualize DSL speed over a longer period  (runnable on a Rasp
 
 The program 'speedTracker' will have two modes:
 
-- a mode for producing data periodically via a cron job and generating the output at a fixed location:
+- a mode 1 for producing data periodically via a cron job and generating the output at a fixed location:
 
 ```bash
 speedtracker run
@@ -23,7 +23,7 @@ It will do:
 4. transform into a self-containing html.page at location 'output_file'.
 
 
-- a mode to produce a self a self-containing html.page at a given location (without calling speedtestJson):
+- a mode 2 to produce a self a self-containing html.page at a given location (without calling speedtestJson):
 
 ```bash
 speedtracker ./index.html 2022-01-01 2021-12-31
