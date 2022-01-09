@@ -20,9 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
+use std::process::Command;
 
-use mylib::test;
+pub fn test() {
+    let output = Command::new("./SpeedTest/speedtestJson")
+                         .output()
+                         .expect("failed to execute process");
 
-fn main() {
-    test();
+    println!("status: {}", output.status);
+    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+
+    assert!(output.status.success());
 }
