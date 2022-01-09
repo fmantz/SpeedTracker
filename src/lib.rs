@@ -30,12 +30,15 @@ use flexi_logger::*;
 use log::*;
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::error::Error;
+use std::fs;
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 use std::time::Instant;
 
-const SPEED_TEST_CMD: &str = "./SpeedTest/speedtestJson";
-const CONFIG_FILENAME: &str = "speedtracker.toml";
+const SPEED_TEST_CMD: &'static str = "./SpeedTest/speedtestJson";
+const CONFIG_FILENAME: &'static str = "speedtracker.toml";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -114,6 +117,7 @@ pub fn init_logger(config: &Config) {
     }
 }
 
+/// transform config to setup to run it in mode 1
 pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
     //last data file name is:
     let now = chrono::Local::now();
@@ -151,6 +155,7 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
     }
 }
 
+/// transform config to setup to run it in mode 2
 pub fn config_to_setup_for_mode_2(
     config: Config,
     from_date: &str,
@@ -188,6 +193,9 @@ pub fn config_to_setup_for_mode_2(
     }
 }
 
+//create a file name from a date
+//all the data from one month is stored in the same file
+//the name is in a format so that names are ordered according to the timeline
 fn get_data_file_name(date: &NaiveDate) -> String {
     date.format("%Y-%m-DATA.json").to_string()
 }
@@ -236,20 +244,37 @@ pub fn run_speed_test(output_file: &Path) {
         Ok(output) => {
             if output.status.success() {
                 let json = String::from_utf8_lossy(&output.stdout);
-                println!("stdout: {}", json);
-                my_log(&start, &stop, Ok("jo jo"));
+                match append_json_to_file(output_file, &json) {
+                    Ok(()) => info!("run_speed_test OK from {:?} to {:?}", start, stop),
+                    Err(err) => error!(
+                        "run_speed_test ERROR from {:?} to {:?} message = {}",
+                        start, stop, &err
+                    ),
+                };
             } else {
                 let err_msg = String::from_utf8_lossy(&output.stdout);
-                my_log(&start, &stop, Err(&err_msg));
+                error!(
+                    "run_speed_test ERROR from {:?} to {:?} message = {}",
+                    start, stop, &err_msg
+                );
             }
         }
-        Err(e) => my_log(&start, &stop, Err(&e.to_string())),
+        Err(e) => error!(
+            "run_speed_test ERROR from {:?} to {:?} message = {}",
+            start,
+            stop,
+            &e.to_string()
+        ),
     }
 }
 
-fn my_log(start: &Instant, stop: &Instant, result: Result<&str, &str>) {
-    match result {
-        Ok(m) => println!("jo jo {}", m),
-        Err(e) => println!("no no {}", e),
-    }
+fn append_json_to_file(output_file: &Path, json: &str) -> Result<(), Box<dyn Error>> {
+    let mut file = fs::OpenOptions::new()
+        .append(true)
+        .create(true)
+        .write(true)
+        .open(output_file)?;
+    file.write_all(json.as_bytes())?;
+    file.flush()?;
+    Ok(())
 }
