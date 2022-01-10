@@ -1,3 +1,6 @@
 [submodule "SpeedTest"]
 	path = SpeedTest
 	url = git@github.com:fmantz/SpeedTest.git
+[submodule "faccess"]
+	path = faccess
+	url = git@github.com:fmantz/faccess.git
