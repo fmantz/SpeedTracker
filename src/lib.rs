@@ -37,7 +37,7 @@ use std::path::Path;
 use std::process::Command;
 use std::time::Instant;
 
-const SPEED_TEST_CMD: &'static str = "./SpeedTest/speedtestJson";
+const SPEED_TEST_CMD: &'static str = "speedtestJson";
 const CONFIG_FILENAME: &'static str = "speedtracker.toml";
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -70,12 +70,17 @@ pub struct Setup {
     to_date: NaiveDate,
     /// should be on a path served by a webserver (apache e.g.)
     output_file: String,
+    /// different to the standard working dir, it is the same
+    /// dir the program is stored. so the program can be called
+    /// from anywhere and read the config an template file always
+    /// from the same place
+    working_dir: String,
 }
 
 impl Setup {
     pub fn maybe_speed_test(&self) {
         if let Some(f) = &self.new_data_file {
-            run_speed_test(Path::new(&f));
+            run_speed_test(Path::new(&self.working_dir), Path::new(&f));
         }
     }
 }
@@ -96,8 +101,8 @@ impl ::std::default::Default for Config {
 
 /// read config file (create if not exists).
 /// write example to console (if not exists).
-pub fn read_config() -> Config {
-    let path = env::current_dir().unwrap().join(CONFIG_FILENAME);
+pub fn read_config(working_dir: &Path) -> Config {
+    let path = working_dir.join(CONFIG_FILENAME);
     let maybe_config: Result<Config, ConfyError> = confy::load_path(&path);
     match maybe_config {
         Err(ex) => panic!("Abort {:?}", ex),
@@ -126,7 +131,7 @@ pub fn init_logger(config: &Config) {
 }
 
 /// transform config to setup to run it in mode 1
-pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
+pub fn config_to_setup_for_mode_1(working_dir: &Path, config: Config) -> Setup {
     //last data file name is:
     let now = chrono::Local::now();
     let today: NaiveDate = now.naive_local().date();
@@ -160,11 +165,13 @@ pub fn config_to_setup_for_mode_1(config: Config) -> Setup {
         from_date: pastday,
         to_date: today,
         output_file: config.output_file,
+        working_dir: working_dir.to_str().unwrap().to_string(),
     }
 }
 
 /// transform config to setup to run it in mode 2
 pub fn config_to_setup_for_mode_2(
+    working_dir: &Path,
     config: Config,
     from_date: &str,
     to_date: &str,
@@ -198,6 +205,7 @@ pub fn config_to_setup_for_mode_2(
         from_date: from_date_as_nd,
         to_date: to_date_as_nd,
         output_file: output_file.to_string(),
+        working_dir: working_dir.to_str().unwrap().to_string(),
     }
 }
 
@@ -244,9 +252,9 @@ fn check_file_full_access(file: &Path) -> bool {
     rs
 }
 
-fn run_speed_test(output_file: &Path) {
+fn run_speed_test(working_dir: &Path, output_file: &Path) {
     let start: Instant = Instant::now();
-    let output_rs = Command::new(SPEED_TEST_CMD).output();
+    let output_rs = Command::new(working_dir.join(SPEED_TEST_CMD).to_str().unwrap()).output();
     let stop: Instant = Instant::now();
     match output_rs {
         Ok(output) => {

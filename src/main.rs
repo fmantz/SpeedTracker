@@ -23,6 +23,7 @@
 
 use mylib::*;
 use std::env;
+use std::path::Path;
 use std::process;
 
 const PROGRAM_NAME: &'static str = "speedtracker";
@@ -36,14 +37,15 @@ fn main() {
         print_usage();
         process::exit(SUCCESS);
     } else {
-        let config = read_config();
+        let working_dir: &Path = Path::new(&args[0]).parent().unwrap();
+        let config = read_config(working_dir);
 
         init_logger(&config);
 
         //decide setup by command line arguments:
         let setup = match args_len {
-            2 if &args[1] == "run" => config_to_setup_for_mode_1(config),
-            4 => config_to_setup_for_mode_2(config, &args[1], &args[2], &args[3]),
+            2 if &args[1] == "run" => config_to_setup_for_mode_1(working_dir, config),
+            4 => config_to_setup_for_mode_2(working_dir, config, &args[1], &args[2], &args[3]),
             _ => {
                 print_usage();
                 process::exit(SUCCESS);
