@@ -37,8 +37,10 @@ use std::path::Path;
 use std::process::Command;
 use std::time::Instant;
 
-const SPEED_TEST_CMD: &'static str = "speedtestJson";
-const CONFIG_FILENAME: &'static str = "speedtracker.toml";
+const SPEED_TEST_CMD:   &'static str = "speedtestJson";
+const CONFIG_FILENAME:  &'static str = "speedtracker.toml";
+const DATE_FORMAT:      &'static str = "%Y-%m-%d";
+const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -88,7 +90,7 @@ impl Setup {
 impl ::std::default::Default for Config {
     fn default() -> Self {
         Self {
-            data_dir: String::from("./data"),
+            data_dir: String::from("./"),
             output_file: String::from("./index.html"),
             /// two weeks
             output_xdays: 14,
@@ -178,11 +180,11 @@ pub fn config_to_setup_for_mode_2(
     output_file: &str,
 ) -> Setup {
     //note: console errors are ok here since it is used as console command:
-    let from_date_as_nd = NaiveDate::parse_from_str(from_date, "%Y-%m-%d").expect(&format!(
+    let from_date_as_nd = NaiveDate::parse_from_str(from_date, DATE_FORMAT).expect(&format!(
         "Invalid date format: {} (e.g. 2022-01-15)",
         from_date
     ));
-    let to_date_as_nd = NaiveDate::parse_from_str(to_date, "%Y-%m-%d").expect(&format!(
+    let to_date_as_nd = NaiveDate::parse_from_str(to_date, DATE_FORMAT).expect(&format!(
         "Invalid date format: {} (e.g. 2022-01-15)",
         to_date
     ));
@@ -253,30 +255,35 @@ fn check_file_full_access(file: &Path) -> bool {
 }
 
 fn run_speed_test(working_dir: &Path, output_file: &Path) {
-    let start: Instant = Instant::now();
+    let start: String = Local::now().format(DATE_TIME_FORMAT).to_string();
     let output_rs = Command::new(working_dir.join(SPEED_TEST_CMD).to_str().unwrap()).output();
-    let stop: Instant = Instant::now();
+    let stop: String = Local::now().format(DATE_TIME_FORMAT).to_string();
     match output_rs {
         Ok(output) => {
             if output.status.success() {
                 let json = String::from_utf8_lossy(&output.stdout);
                 match append_json_to_file(output_file, &json) {
-                    Ok(()) => info!("run_speed_test OK from {:?} to {:?}", start, stop),
+                    Ok(()) =>
+                        if json.trim().eq("") {
+                            info!("run_speed_test ERROR from {} to {} message = 'empty output'", start, stop);
+                        } else{
+                            info!("run_speed_test OK from {} to {}", start, stop);
+                        }
                     Err(err) => error!(
-                        "run_speed_test ERROR from {:?} to {:?} message = {}",
+                        "run_speed_test ERROR from {} to {} message = '{}'",
                         start, stop, &err
                     ),
                 };
             } else {
                 let err_msg = String::from_utf8_lossy(&output.stdout);
                 error!(
-                    "run_speed_test ERROR from {:?} to {:?} message = {}",
+                    "run_speed_test ERROR from {} to {} message = '{}'",
                     start, stop, &err_msg
                 );
             }
         }
         Err(e) => error!(
-            "run_speed_test ERROR from {:?} to {:?} message = {}",
+            "run_speed_test ERROR from {} to {} message = '{}'",
             start,
             stop,
             &e.to_string()

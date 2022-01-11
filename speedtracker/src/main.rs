@@ -63,7 +63,7 @@ fn main() {
 fn print_usage() {
     println!("FOR MODE 1 'speedtest + standard.html generation' run:");
     println!("{} run\n", PROGRAM_NAME);
-    println!("FOR MODE 2: 'only' output generation run:");
+    println!("FOR MODE 2: 'only' output.html generation run:");
     println!("{} from_date to_date output_file\n", PROGRAM_NAME);
     println!("e.g. {} 2022-01-01 2021-12-31 ./index.html\n", PROGRAM_NAME);
 }
