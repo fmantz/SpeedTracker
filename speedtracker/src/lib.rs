@@ -260,28 +260,33 @@ fn run_speed_test(working_dir: &Path, output_file: &Path) {
     let stop: String = Local::now().format(DATE_TIME_FORMAT).to_string();
     match output_rs {
         Ok(output) => {
+            let err_msg = String::from_utf8_lossy(&output.stdout);
             if output.status.success() {
                 let json = String::from_utf8_lossy(&output.stdout);
                 match append_json_to_file(output_file, &json) {
                     Ok(()) =>
-                        if json.trim().eq("") {
-                            info!("run_speed_test ERROR from {} to {} message = 'empty output'", start, stop);
+                        if !err_msg.trim().eq("") {
+                            // speed_test run normally but could not find a server e.g:
+                            info!("run_speed_test ERROR from {} to {} message = '{}'", start, stop, &err_msg);
                         } else{
+                            // everything is fine:
                             info!("run_speed_test OK from {} to {}", start, stop);
                         }
                     Err(err) => error!(
+                        // could not write speed_test result:
                         "run_speed_test ERROR from {} to {} message = '{}'",
                         start, stop, &err
                     ),
                 };
             } else {
-                let err_msg = String::from_utf8_lossy(&output.stdout);
+                // speed_test crashed:
                 error!(
                     "run_speed_test ERROR from {} to {} message = '{}'",
                     start, stop, &err_msg
                 );
             }
         }
+        // could not get any output speed_test
         Err(e) => error!(
             "run_speed_test ERROR from {} to {} message = '{}'",
             start,
