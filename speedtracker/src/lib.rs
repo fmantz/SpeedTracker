@@ -37,9 +37,9 @@ use std::path::Path;
 use std::process::Command;
 use std::time::Instant;
 
-const SPEED_TEST_CMD:   &'static str = "speedtestJson";
-const CONFIG_FILENAME:  &'static str = "speedtracker.toml";
-const DATE_FORMAT:      &'static str = "%Y-%m-%d";
+const SPEED_TEST_CMD: &'static str = "speedtestJson";
+const CONFIG_FILENAME: &'static str = "speedtracker.toml";
+const DATE_FORMAT: &'static str = "%Y-%m-%d";
 const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -260,18 +260,22 @@ fn run_speed_test(working_dir: &Path, output_file: &Path) {
     let stop: String = Local::now().format(DATE_TIME_FORMAT).to_string();
     match output_rs {
         Ok(output) => {
-            let err_msg = String::from_utf8_lossy(&output.stdout);
+            let err_msg = String::from_utf8_lossy(&output.stderr);
             if output.status.success() {
                 let json = String::from_utf8_lossy(&output.stdout);
                 match append_json_to_file(output_file, &json) {
-                    Ok(()) =>
+                    Ok(()) => {
                         if !err_msg.trim().eq("") {
                             // speed_test run normally but could not find a server e.g:
-                            info!("run_speed_test ERROR from {} to {} message = '{}'", start, stop, &err_msg);
-                        } else{
+                            info!(
+                                "run_speed_test ERROR from {} to {} message = '{}'",
+                                start, stop, &err_msg
+                            );
+                        } else {
                             // everything is fine:
                             info!("run_speed_test OK from {} to {}", start, stop);
                         }
+                    }
                     Err(err) => error!(
                         // could not write speed_test result:
                         "run_speed_test ERROR from {} to {} message = '{}'",
