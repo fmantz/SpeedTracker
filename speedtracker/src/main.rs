@@ -52,9 +52,10 @@ fn main() {
             }
         };
 
-        setup.maybe_speed_test();
+        //setup.maybe_speed_test();
 
         //parse && filter data
+        setup.test();
 
         //write output
     }

@@ -34,6 +34,7 @@ use std::error::Error;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
@@ -83,6 +84,15 @@ impl Setup {
     pub fn maybe_speed_test(&self) {
         if let Some(f) = &self.new_data_file {
             run_speed_test(Path::new(&self.working_dir), Path::new(&f));
+        }
+    }
+    pub fn test(&self) {
+        for f in read_data_file_paths(
+            Path::new(&self.data_dir),
+            &self.first_filter_file_name,
+            &self.last_filter_file_name,
+        ) {
+            println!("{:?}", f);
         }
     }
 }
@@ -243,7 +253,7 @@ fn check_file_full_access(file: &Path) -> bool {
             return false;
         }
     };
-    let mut rs = check_path_full_access(dir);
+    let rs = check_path_full_access(dir);
     if rs {
         if file.exists() {
             if !file.writable() {
@@ -309,4 +319,38 @@ fn append_json_to_file(output_file: &Path, json: &str) -> Result<(), Box<dyn Err
     file.write_all(json.as_bytes())?;
     file.flush()?;
     Ok(())
+}
+
+fn read_data_file_paths(
+    data_dir: &Path,
+    first_filter_file_name: &str,
+    last_filter_file_name: &str,
+) -> Option<Vec<String>> {
+    let mut rs: Vec<String> = fs::read_dir(data_dir)
+        .ok()?
+        .filter_map(|entry| {
+            Some(
+                entry
+                    .ok()?
+                    .path()
+                    .strip_prefix(data_dir)
+                    .ok()?
+                    .to_str()
+                    .unwrap()
+                    .to_string(),
+            )
+        })
+        .filter(|file_name| {
+            (first_filter_file_name <= file_name) && (last_filter_file_name >= file_name)
+        })
+        .map(|file_name| {
+            Path::new(data_dir)
+                .join(file_name)
+                .to_str()
+                .unwrap()
+                .to_string()
+        })
+        .collect();
+    rs.sort();
+    Some(rs)
 }
