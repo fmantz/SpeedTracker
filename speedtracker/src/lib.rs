@@ -264,6 +264,7 @@ fn check_file_full_access(file: &Path) -> bool {
     rs
 }
 
+/// run the speed_test and append the json output to a data_file
 fn run_speed_test(working_dir: &Path, output_file: &Path) {
     let start: String = Local::now().format(DATE_TIME_FORMAT).to_string();
     let output_rs = Command::new(working_dir.join(SPEED_TEST_CMD).to_str().unwrap()).output();
@@ -310,6 +311,7 @@ fn run_speed_test(working_dir: &Path, output_file: &Path) {
     }
 }
 
+/// append to a file, create the output_file if it does not exist
 fn append_json_to_file(output_file: &Path, json: &str) -> Result<(), Box<dyn Error>> {
     let mut file = fs::OpenOptions::new()
         .append(true)
@@ -321,6 +323,8 @@ fn append_json_to_file(output_file: &Path, json: &str) -> Result<(), Box<dyn Err
     Ok(())
 }
 
+///read paths from the data_dir that have a name that is
+///first_filter_file_name <= file_name <= last_filter_file_name
 fn read_data_file_paths(
     data_dir: &Path,
     first_filter_file_name: &str,
