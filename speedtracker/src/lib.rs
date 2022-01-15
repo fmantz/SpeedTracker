@@ -32,16 +32,17 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::error::Error;
 use std::fs;
-use std::io::Write;
+use std::io::{self, prelude::*, BufReader, Write};
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
-const SPEED_TEST_CMD: &'static str = "speedtestJson";
-const CONFIG_FILENAME: &'static str = "speedtracker.toml";
-const DATE_FORMAT: &'static str = "%Y-%m-%d";
-const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
+use crate::parser::Parser;
+use crate::constants::*;
+
+mod parser;
+mod constants;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -87,12 +88,15 @@ impl Setup {
         }
     }
     pub fn test(&self) {
-        for f in read_data_file_paths(
+        let maybe_file_list = read_data_file_paths(
             Path::new(&self.data_dir),
             &self.first_filter_file_name,
             &self.last_filter_file_name,
-        ) {
-            println!("{:?}", f);
+        );
+        if let Some(file_list) = maybe_file_list {
+            for file in file_list {
+                parse_output_file(&Path::new(&file), &self.from_date, &self.to_date);
+            }
         }
     }
 }
@@ -357,4 +361,23 @@ fn read_data_file_paths(
         .collect();
     rs.sort();
     Some(rs)
+}
+
+fn parse_output_file(
+    data_dir: &Path,
+    from_date: &NaiveDate,
+    to_date: &NaiveDate,
+) -> Option<Vec<String>> {
+
+    let file = fs::File::open(data_dir).ok()?;
+    let reader = BufReader::new(file);
+
+    for read_line in reader.lines() {
+       match read_line {
+         Ok(line) => Parser::parse(&line),
+         Err(e) => error!("could not read data line message = '{}'", e),
+       };
+    }
+
+    Some(Vec::new())
 }
