@@ -32,6 +32,7 @@ pub const CONFIG_FILENAME: &'static str = "speedtracker.toml";
 pub const TEMPLATE_FILENAME: &'static str = "template.html";
 
 // date formats:
+pub const DATE_FILE_NAME_FORMAT: &'static str = "%Y-%m-DATA.json";
 pub const DATE_FORMAT: &'static str = "%Y-%m-%d";
 pub const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
 

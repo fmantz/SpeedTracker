@@ -247,7 +247,7 @@ pub fn config_to_setup_for_mode_2(
 //all the data from one month is stored in the same file
 //the name is in a format so that names are ordered according to the timeline
 fn get_data_file_name(date: &NaiveDate) -> String {
-    date.format("%Y-%m-DATA.json").to_string()
+    date.format(DATE_FILE_NAME_FORMAT).to_string()
 }
 
 fn check_path_full_access(path: &Path) -> bool {
