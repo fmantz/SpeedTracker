@@ -28,40 +28,39 @@ use serde::{de, Deserialize, Deserializer};
 
 #[derive(Debug, Deserialize)]
 pub struct Client {
- wlan: Option<String>,
- ip: String,
- lat: String,
- lon: String,
- isp: String
+    wlan: Option<String>,
+    ip: String,
+    lat: String,
+    lon: String,
+    isp: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Server {
- name: String,
- sponsor: String,
- distance: String,
- host: String,
+    name: String,
+    sponsor: String,
+    distance: String,
+    host: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Performance {
- latency: f64,
- jitter:  Option<f64>,
- downloadConfig: Option<String>,
- uploadConfig: Option<String>,
- download: Option<f64>,
- upload: Option<f64>
+    latency: f64,
+    jitter: Option<f64>,
+    downloadConfig: Option<String>,
+    uploadConfig: Option<String>,
+    download: Option<f64>,
+    upload: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ParsedEntry {
-
     #[serde(deserialize_with = "naive_date_time_from_str")]
     timestamp: NaiveDateTime,
 
-    client : Option<Client>,
-    server : Option<Server>,
-    performance: Option<Performance>
+    client: Option<Client>,
+    server: Option<Server>,
+    performance: Option<Performance>,
 }
 
 pub struct Parser {}

@@ -38,11 +38,11 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
-use crate::parser::Parser;
 use crate::constants::*;
+use crate::parser::Parser;
 
-mod parser;
 mod constants;
+mod parser;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -368,15 +368,14 @@ fn parse_output_file(
     from_date: &NaiveDate,
     to_date: &NaiveDate,
 ) -> Option<Vec<String>> {
-
     let file = fs::File::open(data_dir).ok()?;
     let reader = BufReader::new(file);
 
     for read_line in reader.lines() {
-       match read_line {
-         Ok(line) => Parser::parse(&line),
-         Err(e) => error!("could not read data line message = '{}'", e),
-       };
+        match read_line {
+            Ok(line) => Parser::parse(&line),
+            Err(e) => error!("could not read data line message = '{}'", e),
+        };
     }
 
     Some(Vec::new())
