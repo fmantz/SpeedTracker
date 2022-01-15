@@ -42,7 +42,7 @@ fn main() {
 
         init_logger(&config);
 
-        //decide setup by command line arguments:
+        // decide setup by command line arguments:
         let setup = match args_len {
             2 if &args[1] == "run" => config_to_setup_for_mode_1(working_dir, config),
             4 => config_to_setup_for_mode_2(working_dir, config, &args[1], &args[2], &args[3]),
@@ -52,10 +52,11 @@ fn main() {
             }
         };
 
+        // run speed test:
         //setup.maybe_speed_test();
 
-        //parse && filter data
-        setup.test();
+        // parse and filter data:
+        setup.read_data();
 
         //write output
     }

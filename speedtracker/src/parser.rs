@@ -25,49 +25,51 @@ use crate::constants::*;
 
 use chrono::naive::NaiveDateTime;
 use serde::{de, Deserialize, Deserializer};
+use serde_json::Error;
+
+//format as produced by cmd speedtestJson
 
 #[derive(Debug, Deserialize)]
 pub struct Client {
-    wlan: Option<String>,
-    ip: String,
-    lat: String,
-    lon: String,
-    isp: String,
+    pub wlan: Option<String>,
+    pub ip: String,
+    pub lat: String,
+    pub lon: String,
+    pub isp: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Server {
-    name: String,
-    sponsor: String,
-    distance: String,
-    host: String,
+    pub name: String,
+    pub sponsor: String,
+    pub distance: String,
+    pub host: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Performance {
-    latency: u64,
-    jitter: Option<u64>,
-    downloadConfig: Option<String>,
-    uploadConfig: Option<String>,
-    download: Option<f64>,
-    upload: Option<f64>,
+    pub latency: u64,
+    pub jitter: Option<u64>,
+    pub downloadConfig: Option<String>,
+    pub uploadConfig: Option<String>,
+    pub download: Option<f64>,
+    pub upload: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct ParsedEntry {
     #[serde(deserialize_with = "naive_date_time_from_str")]
-    timestamp: NaiveDateTime,
+    pub timestamp: NaiveDateTime,
 
-    client: Option<Client>,
-    server: Option<Server>,
-    performance: Option<Performance>,
+    pub client: Option<Client>,
+    pub server: Option<Server>,
+    pub performance: Option<Performance>,
 }
 
 pub struct Parser {}
 impl Parser {
-    pub fn parse(serialized_json: &str) {
-        let rs: ParsedEntry = serde_json::from_str(&serialized_json).unwrap();
-        println!("TEST {:?}", rs);
+    pub fn parse(serialized_json: &str) -> Result<ParsedEntry, Error> {
+        serde_json::from_str(&serialized_json)
     }
 }
 

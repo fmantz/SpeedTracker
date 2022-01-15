@@ -39,6 +39,7 @@ use std::process::Command;
 use std::time::Instant;
 
 use crate::constants::*;
+use crate::parser::ParsedEntry;
 use crate::parser::Parser;
 
 mod constants;
@@ -87,16 +88,22 @@ impl Setup {
             run_speed_test(Path::new(&self.working_dir), Path::new(&f));
         }
     }
-    pub fn test(&self) {
+    pub fn read_data(&self) -> Vec<ParsedEntry> {
         let maybe_file_list = read_data_file_paths(
             Path::new(&self.data_dir),
             &self.first_filter_file_name,
             &self.last_filter_file_name,
         );
         if let Some(file_list) = maybe_file_list {
-            for file in file_list {
-                parse_output_file(&Path::new(&file), &self.from_date, &self.to_date);
-            }
+            file_list
+                .iter()
+                .flat_map(|file| {
+                    parse_output_file(&Path::new(&file), &self.from_date, &self.to_date)
+                })
+                .flatten()
+                .collect()
+        } else {
+            Vec::new()
         }
     }
 }
@@ -367,16 +374,36 @@ fn parse_output_file(
     data_dir: &Path,
     from_date: &NaiveDate,
     to_date: &NaiveDate,
-) -> Option<Vec<String>> {
+) -> Option<Vec<ParsedEntry>> {
     let file = fs::File::open(data_dir).ok()?;
     let reader = BufReader::new(file);
-
-    for read_line in reader.lines() {
-        match read_line {
-            Ok(line) => Parser::parse(&line),
-            Err(e) => error!("could not read data line message = '{}'", e),
-        };
-    }
-
-    Some(Vec::new())
+    let rs: Vec<ParsedEntry> = reader
+        .lines()
+        .flat_map(|read_line| {
+            match read_line {
+                Ok(line) => {
+                    match Parser::parse(&line) {
+                        //Filter:
+                        Ok(parsed_entry) => {
+                            let entry_date = &parsed_entry.timestamp.date();
+                            if from_date <= entry_date && entry_date <= to_date {
+                                Some(parsed_entry)
+                            } else {
+                                None
+                            }
+                        }
+                        Err(e) => {
+                            error!("Could not parse json: '{}', message = '{}'", line, e);
+                            None
+                        }
+                    }
+                }
+                Err(e) => {
+                    error!("could not read data line message = '{}'", e);
+                    None
+                }
+            }
+        })
+        .collect();
+    Some(rs)
 }
