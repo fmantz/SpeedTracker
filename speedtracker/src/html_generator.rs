@@ -24,28 +24,31 @@ struct Dataset<N> {
 struct Chart<N> {
     id: String,
     datasets: Vec<Dataset<N>>,
-    average: f64,
     median: f64,
+    average: f64,
     standard_deviation: f64,
 }
 
 struct ChartContainer {
-    latency: Chart<u64>,
-    jitter: Chart<u64>,
+    latency: Chart<u32>,
+    jitter: Chart<u32>,
     download: Chart<f64>,
     upload: Chart<f64>,
 }
 
 impl HtmlGenerator {
     pub fn write_html(data: &Vec<ParsedEntry>, template_path: &Path, output_file: &Path) {
-        let ds: Vec<Point<u64>> = data
-            .iter()
-            .map(|d| {
-                let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-                let y = *d.performance.as_ref().map(|p| &p.latency).unwrap_or(&100);
-                Point { x, y }
-            })
-            .collect();
+        /*
+          let ds: Vec<Point<u32>> = data
+              .iter()
+              .map(|d| {
+                  let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+                  let y = *d.performance.as_ref().map(|p| &p.latency).unwrap_or(&100);
+                  Point { x, y }
+              })
+              .collect();
+        */
+        let ds = create_latency_chart(&data, &100).datasets;
 
         let json = serde_json::to_string(&ds).unwrap();
 
@@ -67,11 +70,11 @@ impl HtmlGenerator {
     //average median and standard_deviation in eigener tabelle
 }
 
-pub fn create_latency_chart(
+fn create_latency_chart(
     data: &Vec<ParsedEntry>,
-    error_latency: &u64, //todo add everythink into one config object
-) -> Chart<u64> {
-    let points: Vec<Point<u64>> = data
+    error_latency: &u32, //todo add everythink into one config object
+) -> Chart<u32> {
+    let points: Vec<Point<u32>> = data
         .iter()
         .map(|d| {
             let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
@@ -91,16 +94,40 @@ pub fn create_latency_chart(
         border_color: "".to_string(), //TODO
     };
 
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| &p.latency);
+            y
+        })
+        .map(|x| *x as f64)
+        .collect();
+
+    let med: f64 = median(&mut values); //is also sorting!
+    let avg: f64 = average(&values);
+    let std: f64 = standard_deviation(&values, &avg);
+
     Chart {
-        id: "".to_string(), //TODO
+        id: "".to_string(),
         datasets: vec![ds],
-        average: 0.0, //TODO
-        median: 0.0,
-        standard_deviation: 0.0, //TODO
+        median: med,
+        average: avg,
+        standard_deviation: std,
     }
 }
 
-fn standard_deviation(numbers: &Vec<f64>, average: f64) -> f64 {
+fn median(numbers: &mut Vec<f64>) -> f64 {
+    numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let mid: usize = numbers.len() / 2;
+    numbers[mid]
+}
+
+fn average(numbers: &Vec<f64>) -> f64 {
+    let len: f64 = numbers.len() as f64;
+    numbers.iter().sum::<f64>() / len
+}
+
+fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
     let variance: f64 = numbers
         .iter()
         .map(|x| {
@@ -109,15 +136,4 @@ fn standard_deviation(numbers: &Vec<f64>, average: f64) -> f64 {
         })
         .sum::<f64>();
     f64::sqrt(variance)
-}
-
-fn average(numbers: &Vec<f64>) -> f64 {
-    let len: f64 = numbers.len() as f64;
-    numbers.iter().sum::<f64>() / len
-}
-
-fn median(numbers: &mut Vec<f64>) -> f64 {
-    numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let mid: usize = numbers.len() / 2;
-    numbers[mid]
 }

@@ -48,8 +48,8 @@ pub struct Server {
 
 #[derive(Debug, Deserialize)]
 pub struct Performance {
-    pub latency: u64,
-    pub jitter: Option<u64>,
+    pub latency: u32,
+    pub jitter: Option<u32>,
     pub downloadConfig: Option<String>,
     pub uploadConfig: Option<String>,
     pub download: Option<f64>,
