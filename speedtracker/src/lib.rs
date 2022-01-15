@@ -111,6 +111,7 @@ impl Setup {
             Vec::new()
         }
     }
+    /// generate html file by transforming data and template:
     pub fn generate_html(&self, data: &Vec<ParsedEntry>) {
         HtmlGenerator::write_html(
             data,

@@ -60,6 +60,7 @@ fn main() {
         let parsed_data = setup.read_data();
 
         //write output
+        setup.generate_html(&parsed_data)
     }
 }
 

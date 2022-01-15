@@ -6,6 +6,6 @@ pub struct HtmlGenerator {}
 
 impl HtmlGenerator {
     pub fn write_html(data: &Vec<ParsedEntry>, template_path: &Path, output_file: &Path) {
-        println!("Test"); //TODO: write error also to console
+        println!("Test {:?}", data); //TODO: write error also to console
     }
 }
