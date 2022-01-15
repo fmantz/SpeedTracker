@@ -21,7 +21,23 @@
 // SOFTWARE.
 //
 
+// program names:
+pub const PROGRAM_NAME: &'static str = "speedtracker";
+pub const EXIT_SUCCESS: i32 = 0;
+
 pub const SPEED_TEST_CMD: &'static str = "speedtestJson";
+
+// file names:
 pub const CONFIG_FILENAME: &'static str = "speedtracker.toml";
+pub const TEMPLATE_FILENAME: &'static str = "template.html";
+
+// date formats:
 pub const DATE_FORMAT: &'static str = "%Y-%m-%d";
 pub const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
+
+// config defaults:
+pub const DEFAULT_DATA_DIR: &'static str = "./";
+pub const DEFAULT_OUTPUT_FILE: &'static str = "./index.html";
+pub const DEFAULT_OUTPUT_XDAYS: u32 = 14;
+pub const DEFAULT_LOG_FILE: &'static str = "./speedtracker.log";
+pub const DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB: u64 = 8096;

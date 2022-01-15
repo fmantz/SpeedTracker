@@ -26,8 +26,9 @@ use std::env;
 use std::path::Path;
 use std::process;
 
-const PROGRAM_NAME: &'static str = "speedtracker";
-const SUCCESS: i32 = 0;
+use crate::constants::*;
+
+mod constants;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -35,7 +36,7 @@ fn main() {
 
     if args_len != 2 && args_len != 4 {
         print_usage();
-        process::exit(SUCCESS);
+        process::exit(EXIT_SUCCESS);
     } else {
         let working_dir: &Path = Path::new(&args[0]).parent().unwrap();
         let config = read_config(working_dir);
@@ -48,7 +49,7 @@ fn main() {
             4 => config_to_setup_for_mode_2(working_dir, config, &args[1], &args[2], &args[3]),
             _ => {
                 print_usage();
-                process::exit(SUCCESS);
+                process::exit(EXIT_SUCCESS);
             }
         };
 
@@ -56,7 +57,7 @@ fn main() {
         //setup.maybe_speed_test();
 
         // parse and filter data:
-        setup.read_data();
+        let parsed_data = setup.read_data();
 
         //write output
     }

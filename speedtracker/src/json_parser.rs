@@ -66,8 +66,8 @@ pub struct ParsedEntry {
     pub performance: Option<Performance>,
 }
 
-pub struct Parser {}
-impl Parser {
+pub struct JsonParser {}
+impl JsonParser {
     pub fn parse(serialized_json: &str) -> Result<ParsedEntry, Error> {
         serde_json::from_str(&serialized_json)
     }

@@ -39,11 +39,13 @@ use std::process::Command;
 use std::time::Instant;
 
 use crate::constants::*;
-use crate::parser::ParsedEntry;
-use crate::parser::Parser;
+use crate::html_generator::HtmlGenerator;
+use crate::json_parser::JsonParser;
+use crate::json_parser::ParsedEntry;
 
 mod constants;
-mod parser;
+mod html_generator;
+mod json_parser;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -83,11 +85,14 @@ pub struct Setup {
 }
 
 impl Setup {
+    /// run speed test in mode 1
+    /// or do nothing  in mode 2
     pub fn maybe_speed_test(&self) {
         if let Some(f) = &self.new_data_file {
             run_speed_test(Path::new(&self.working_dir), Path::new(&f));
         }
     }
+    /// parse data in specific time range
     pub fn read_data(&self) -> Vec<ParsedEntry> {
         let maybe_file_list = read_data_file_paths(
             Path::new(&self.data_dir),
@@ -106,18 +111,23 @@ impl Setup {
             Vec::new()
         }
     }
+    pub fn generate_html(&self, data: &Vec<ParsedEntry>) {
+        HtmlGenerator::write_html(
+            data,
+            &Path::new(&self.working_dir).join(TEMPLATE_FILENAME),
+            &Path::new(&self.output_file),
+        );
+    }
 }
 
 impl ::std::default::Default for Config {
     fn default() -> Self {
         Self {
-            data_dir: String::from("./"),
-            output_file: String::from("./index.html"),
-            /// two weeks
-            output_xdays: 14,
-            log_file: String::from("./speedtracker.log"),
-            /// maximal size of log file in kb before the file is rotated
-            log_file_max_length_in_kb: 8096,
+            data_dir: String::from(DEFAULT_DATA_DIR),
+            output_file: String::from(DEFAULT_OUTPUT_FILE),
+            output_xdays: DEFAULT_OUTPUT_XDAYS,
+            log_file: String::from(DEFAULT_LOG_FILE),
+            log_file_max_length_in_kb: DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB,
         }
     }
 }
@@ -382,7 +392,7 @@ fn parse_output_file(
         .flat_map(|read_line| {
             match read_line {
                 Ok(line) => {
-                    match Parser::parse(&line) {
+                    match JsonParser::parse(&line) {
                         //Filter:
                         Ok(parsed_entry) => {
                             let entry_date = &parsed_entry.timestamp.date();
