@@ -47,23 +47,29 @@ impl HtmlGenerator {
         download_chart: &ChartConfig<f64>,
         upload_chart: &ChartConfig<f64>,
     ) {
+        //create chart data;
         let lat_chart = create_latency_chart(data, latency_chart);
         let jit_chart = create_jitter_chart(data, jitter_chart);
         let dwn_chart = create_download_chart(data, download_chart);
         let upl_chart = create_upload_chart(data, upload_chart);
 
-        let json = serde_json::to_string(&lat_chart.datasets).unwrap();
+        //transform chart data to json
+        let response_time_dss: Vec<&Dataset<u32>> = lat_chart
+            .datasets
+            .iter()
+            .chain(jit_chart.datasets.iter())
+            .collect();
+        let throughput_dss: Vec<&Dataset<f64>> = dwn_chart
+            .datasets
+            .iter()
+            .chain(upl_chart.datasets.iter())
+            .collect();
+        let response_time_json = serde_json::to_string(&response_time_dss).unwrap();
+        let throughput_json = serde_json::to_string(&throughput_dss).unwrap();
 
-        println!("Test {}", &json); //TODO: write error also to console
+        println!("Test {}", &response_time_json);
+        println!("Test {}", &throughput_json); //TODO: write error also to console
     }
-
-    //latency to datasets
-
-    //jitter to datasets
-
-    //download to datasets
-
-    //upload to datasets:
 
     //map id -> Vec<datasets>
 
