@@ -22,7 +22,9 @@ use log::error;
 use regex::Regex;
 use serde::Serialize;
 use std::f64;
+use std::fmt::Display;
 use std::fs;
+use std::fs::File;
 use std::io::{self, prelude::*, BufReader, Write};
 use std::path::Path;
 
@@ -158,111 +160,15 @@ fn write_output_file(
                                 let suffix = &line[mat.end()..line.len()];
                                 match matched_string {
                                     REPLACEMENT_ID_RAW_DATA => {
-                                        writeln!(
-                                            &mut out_file,
-                                           "<table id=\"rawdata\">\n
-                                            <tr>\n
-                                                <th class=\"ts\">timestamp</th>\n
-                                                <th class=\"client\">client-wlan</th>\n
-                                                <th class=\"client\">client-ip</th>\n
-                                                <th class=\"client\">client-lat</th>\n
-                                                <th class=\"client\">client-lon</th>\n
-                                                <th class=\"client\">client-isp</th>\n
-                                                <th class=\"server\">server-name</th>\n
-                                                <th class=\"server\">server-sponsor</th>\n
-                                                <th class=\"server\">server-distance</th>\n
-                                                <th class=\"server\">server-host</th>\n
-                                                <th class=\"performance\">latency</th>\n
-                                                <th class=\"performance\">jitter</th>\n
-                                                <th class=\"performance\">download_config</th>\n
-                                                <th class=\"performance\">upload_config</th>\n
-                                                <th class=\"performance\">download</th>\n
-                                                <th class=\"performance\">upload</th>\n
-                                             </tr>\n"
-                                        );
-                                        for entry in data {
-                                            writeln!(
-                                                &mut out_file,
-                                                "<tr>
-                                                  <td class=\"ts\">{:?}</td>",
-                                                entry.timestamp.format(DATE_TIME_FORMAT)
-                                            );
-                                            if let Some(client) = &entry.client {
-                                               writeln!(
-                                                    &mut out_file,
-                                                    "<td class=\"client\">{:?}</td>
-                                                     <td class=\"client\">{:?}</td>
-                                                     <td class=\"client\">{:?}</td>
-                                                     <td class=\"client\">{:?}</td>
-                                                     <td class=\"client\">{:?}</td>",
-                                                     client.wlan,
-                                                     client.ip,
-                                                     client.lat,
-                                                     client.lon,
-                                                     client.isp
-                                               );
-                                            } else {
-                                               writeln!(
-                                                    &mut out_file,
-                                                    "<td colspan=\"5\" class=\"client\"></td>"
-                                               );
-                                            }
-                                            if let Some(server) = &entry.server {
-                                                writeln!(
-                                                    &mut out_file,
-                                                    "<td class=\"server\">{:?}</td>
-                                                     <td class=\"server\">{:?}</td>
-                                                     <td class=\"server\">{:?}</td>
-                                                     <td class=\"server\">{:?}</td>",
-                                                     server.name,
-                                                     server.sponsor,
-                                                     server.distance,
-                                                     server.host
-                                                );
-                                            } else {
-                                                writeln!(
-                                                    &mut out_file,
-                                                    "<td colspan=\"4\" class=\"server\"></td>"
-                                                );
-                                            }
-                                            if let Some(performance) = &entry.performance {
-                                                writeln!(
-                                                    &mut out_file,
-                                                    "<td class=\"performance\">{:?}</td>
-                                                     <td class=\"performance\">{:?}</td>
-                                                     <td class=\"performance\">{:?}</td>
-                                                     <td class=\"performance\">{:?}</td>
-                                                     <td class=\"performance\">{:?}</td>
-                                                     <td class=\"performance\">{:?}</td>",
-                                                     performance.latency,
-                                                     performance.jitter,
-                                                     performance.download_config,
-                                                     performance.upload_config,
-                                                     performance.download,
-                                                     performance.upload
-                                                );
-                                            } else {
-                                                writeln!(
-                                                    &mut out_file,
-                                                    "<td colspan=\"6\" class=\"performance\"></td>"
-                                                );
-                                            }
-                                            writeln!(
-                                                &mut out_file,
-                                                "</tr>"
-                                            );
-                                        }
-                                        writeln!(
-                                            &mut out_file,
-                                            "</table>"
-                                        );
+                                        write_raw_data(data, &mut out_file, prefix, suffix);
                                     }
                                     REPLACEMENT_ID_STATISTICS => {
                                         writeln!(
                                             &mut out_file,
                                             "{}{}{}",
                                             prefix, statistics_table, suffix
-                                        );                                    }
+                                        );
+                                    }
                                     REPLACEMENT_ID_RESPONSE_TIMES => {
                                         writeln!(
                                             &mut out_file,
@@ -300,6 +206,298 @@ fn write_output_file(
         }
         Ok(()) => (),
     };
+}
+
+/// prepare data to show latency:
+fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
+    let points: Vec<Point<u32>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y = *d
+                .performance
+                .as_ref()
+                .map(|p| &p.latency)
+                .unwrap_or(&config.default_value);
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.latency);
+            y
+        })
+        .map(|x| x as f64)
+        .collect();
+
+    create_chart(dss, &mut values)
+}
+
+/// prepare data to show jitter:
+fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
+    let points: Vec<Point<u32>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y: u32 = d
+                .performance
+                .as_ref()
+                .map(|p| p.jitter.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.jitter);
+            y
+        })
+        .flatten()
+        .map(|x| x as f64)
+        .collect();
+
+    create_chart(dss, &mut values)
+}
+
+/// prepare data to download speed:
+fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+    let points: Vec<Point<f64>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y: f64 = d
+                .performance
+                .as_ref()
+                .map(|p| p.download.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.download);
+            y
+        })
+        .flatten()
+        .collect();
+
+    create_chart(dss, &mut values)
+}
+
+/// prepare data to upload speed:
+fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+    let points: Vec<Point<f64>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y: f64 = d
+                .performance
+                .as_ref()
+                .map(|p| p.upload.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.upload);
+            y
+        })
+        .flatten()
+        .collect();
+
+    create_chart(dss, &mut values)
+}
+
+// helper methods:
+
+fn create_datasets<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Vec<Dataset<T>> {
+    let expected_ds = config
+        .expected_value
+        .as_ref()
+        .map(|c| create_dataset_expected(c, &points));
+
+    let ds = create_dataset(&config, points);
+    vec![Some(ds), expected_ds].into_iter().flatten().collect()
+}
+
+/// dataset containing the real data:
+fn create_dataset<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Dataset<T> {
+    Dataset {
+        label: String::from(&config.label),
+        data: points,
+        fill: config.fill,
+        border_color: String::from(&config.border_color),
+    }
+}
+
+/// dataset for expected line:
+fn create_dataset_expected<T: Copy>(
+    config: &ExpectedConfig<T>,
+    points: &Vec<Point<T>>,
+) -> Dataset<T> {
+    let default_x = &String::from("");
+    let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
+    let last_x: &str = points.last().map(|p| &p.x).unwrap_or(default_x);
+    Dataset {
+        label: String::from(&config.label),
+        data: vec![
+            Point {
+                x: String::from(first_x),
+                y: config.value,
+            },
+            Point {
+                x: String::from(last_x),
+                y: config.value,
+            },
+        ],
+        fill: config.fill,
+        border_color: String::from(&config.border_color),
+    }
+}
+
+/// create chart an do some statistics:
+fn create_chart<T: Copy>(dss: Vec<Dataset<T>>, mut values: &mut Vec<f64>) -> Chart<T> {
+    let med: f64 = median(&mut values); //is also sorting!
+    let avg: f64 = average(&values);
+    let std: f64 = standard_deviation(&values, &avg);
+
+    Chart {
+        datasets: dss,
+        median: med,
+        average: avg,
+        standard_deviation: std,
+    }
+}
+
+fn median(numbers: &mut Vec<f64>) -> f64 {
+    numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let mid: usize = numbers.len() / 2;
+    numbers[mid]
+}
+
+fn average(numbers: &Vec<f64>) -> f64 {
+    let len: f64 = numbers.len() as f64;
+    numbers.iter().sum::<f64>() / len
+}
+
+fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
+    let variance: f64 = numbers
+        .iter()
+        .map(|x| {
+            let y = x - average;
+            y * y
+        })
+        .sum::<f64>();
+    f64::sqrt(variance)
+}
+
+fn write_raw_data(data: &Vec<ParsedEntry>, out_file: &mut File, prefix: &str, suffix: &str) {
+    writeln!(
+        out_file,
+        "{}<table id=\"rawdata\">\n
+              <tr>\n
+                  <th class=\"ts\">timestamp</th>\n
+                  <th class=\"client\">client-wlan</th>\n
+                  <th class=\"client\">client-ip</th>\n
+                  <th class=\"client\">client-lat</th>\n
+                  <th class=\"client\">client-lon</th>\n
+                  <th class=\"client\">client-isp</th>\n
+                  <th class=\"server\">server-name</th>\n
+                  <th class=\"server\">server-sponsor</th>\n
+                  <th class=\"server\">server-distance</th>\n
+                  <th class=\"server\">server-host</th>\n
+                  <th class=\"performance\">latency</th>\n
+                  <th class=\"performance\">jitter</th>\n
+                  <th class=\"performance\">download_config</th>\n
+                  <th class=\"performance\">upload_config</th>\n
+                  <th class=\"performance\">download</th>\n
+                  <th class=\"performance\">upload</th>\n
+              </tr>\n",
+        prefix
+    );
+    for entry in data {
+        writeln!(
+            out_file,
+            "<tr>
+                 <td class=\"ts\">{:?}</td>",
+            entry.timestamp.format(DATE_TIME_FORMAT)
+        );
+        if let Some(client) = &entry.client {
+            writeln!(
+                out_file,
+                "<td class=\"client\">{}</td>
+                 <td class=\"client\">{}</td>
+                 <td class=\"client\">{}</td>
+                 <td class=\"client\">{}</td>
+                 <td class=\"client\">{}</td>",
+                to_string(&client.wlan),
+                client.ip,
+                client.lat,
+                client.lon,
+                client.isp
+            );
+        } else {
+            writeln!(out_file, "<td colspan=\"5\" class=\"client\"></td>");
+        }
+        if let Some(server) = &entry.server {
+            writeln!(
+                out_file,
+                "<td class=\"server\">{}</td>
+                 <td class=\"server\">{}</td>
+                 <td class=\"server\">{}</td>
+                 <td class=\"server\">{}</td>",
+                server.name, server.sponsor, server.distance, server.host
+            );
+        } else {
+            writeln!(out_file, "<td colspan=\"4\" class=\"server\"></td>");
+        }
+        if let Some(performance) = &entry.performance {
+            writeln!(
+                out_file,
+                "<td class=\"performance\">{}</td>
+                 <td class=\"performance\">{}</td>
+                 <td class=\"performance\">{}</td>
+                 <td class=\"performance\">{}</td>
+                 <td class=\"performance\">{}</td>
+                 <td class=\"performance\">{}</td>",
+                performance.latency,
+                to_string(&performance.jitter),
+                to_string(&performance.download_config),
+                to_string(&performance.upload_config),
+                to_string(&performance.download),
+                to_string(&performance.upload)
+            );
+        } else {
+            writeln!(out_file, "<td colspan=\"6\" class=\"performance\"></td>");
+        }
+        writeln!(out_file, "</tr>");
+    }
+    writeln!(out_file, "</table>{}", suffix);
+}
+
+fn to_string<T: Display>(op: &Option<T>) -> String {
+    if let Some(p) = op {
+        format!("{}", p)
+    } else {
+        String::new()
+    }
 }
 
 fn create_statistics_table(
@@ -355,208 +553,4 @@ fn create_statistic_table<N: Copy>(
         chart.average,
         chart.standard_deviation
     )
-}
-
-/// prepare data to show latency:
-fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
-    let points: Vec<Point<u32>> = data
-        .iter()
-        .map(|d| {
-            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-            let y = *d
-                .performance
-                .as_ref()
-                .map(|p| &p.latency)
-                .unwrap_or(&config.default_value);
-            Point { x, y }
-        })
-        .collect();
-
-    let dss = create_datasets(&config, points);
-
-    let mut values: Vec<f64> = data
-        .iter()
-        .flat_map(|d| {
-            let y = d.performance.as_ref().map(|p| p.latency);
-            y
-        })
-        .map(|x| x as f64)
-        .collect();
-
-    create_chart(&config, dss, &mut values)
-}
-
-/// prepare data to show jitter:
-fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
-    let points: Vec<Point<u32>> = data
-        .iter()
-        .map(|d| {
-            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-            let y: u32 = d
-                .performance
-                .as_ref()
-                .map(|p| p.jitter.unwrap_or(config.default_value))
-                .unwrap();
-            Point { x, y }
-        })
-        .collect();
-
-    let dss = create_datasets(&config, points);
-
-    let mut values: Vec<f64> = data
-        .iter()
-        .flat_map(|d| {
-            let y = d.performance.as_ref().map(|p| p.jitter);
-            y
-        })
-        .flatten()
-        .map(|x| x as f64)
-        .collect();
-
-    create_chart(&config, dss, &mut values)
-}
-
-/// prepare data to download speed:
-fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
-    let points: Vec<Point<f64>> = data
-        .iter()
-        .map(|d| {
-            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-            let y: f64 = d
-                .performance
-                .as_ref()
-                .map(|p| p.download.unwrap_or(config.default_value))
-                .unwrap();
-            Point { x, y }
-        })
-        .collect();
-
-    let dss = create_datasets(&config, points);
-
-    let mut values: Vec<f64> = data
-        .iter()
-        .flat_map(|d| {
-            let y = d.performance.as_ref().map(|p| p.download);
-            y
-        })
-        .flatten()
-        .collect();
-
-    create_chart(&config, dss, &mut values)
-}
-
-/// prepare data to upload speed:
-fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
-    let points: Vec<Point<f64>> = data
-        .iter()
-        .map(|d| {
-            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-            let y: f64 = d
-                .performance
-                .as_ref()
-                .map(|p| p.upload.unwrap_or(config.default_value))
-                .unwrap();
-            Point { x, y }
-        })
-        .collect();
-
-    let dss = create_datasets(&config, points);
-
-    let mut values: Vec<f64> = data
-        .iter()
-        .flat_map(|d| {
-            let y = d.performance.as_ref().map(|p| p.upload);
-            y
-        })
-        .flatten()
-        .collect();
-
-    create_chart(&config, dss, &mut values)
-}
-
-// helper methods:
-
-fn create_datasets<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Vec<Dataset<T>> {
-    let expected_ds = config
-        .expected_value
-        .as_ref()
-        .map(|c| create_dataset_expected(c, &points));
-
-    let ds = create_dataset(&config, points);
-    vec![Some(ds), expected_ds].into_iter().flatten().collect()
-}
-
-/// dataset containing the real data:
-fn create_dataset<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Dataset<T> {
-    Dataset {
-        label: String::from(&config.label),
-        data: points,
-        fill: config.fill,
-        border_color: String::from(&config.border_color),
-    }
-}
-
-/// dataset for expected line:
-fn create_dataset_expected<T: Copy>(
-    config: &ExpectedConfig<T>,
-    points: &Vec<Point<T>>,
-) -> Dataset<T> {
-    let default_x = &String::from("");
-    let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
-    let last_x: &str = points.last().map(|p| &p.x).unwrap_or(default_x);
-    Dataset {
-        label: String::from(&config.label),
-        data: vec![
-            Point {
-                x: String::from(first_x),
-                y: config.value,
-            },
-            Point {
-                x: String::from(last_x),
-                y: config.value,
-            },
-        ],
-        fill: config.fill,
-        border_color: String::from(&config.border_color),
-    }
-}
-
-/// create chart an do some statistics:
-fn create_chart<T: Copy>(
-    config: &ChartConfig<T>,
-    dss: Vec<Dataset<T>>,
-    mut values: &mut Vec<f64>,
-) -> Chart<T> {
-    let med: f64 = median(&mut values); //is also sorting!
-    let avg: f64 = average(&values);
-    let std: f64 = standard_deviation(&values, &avg);
-
-    Chart {
-        datasets: dss,
-        median: med,
-        average: avg,
-        standard_deviation: std,
-    }
-}
-
-fn median(numbers: &mut Vec<f64>) -> f64 {
-    numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    let mid: usize = numbers.len() / 2;
-    numbers[mid]
-}
-
-fn average(numbers: &Vec<f64>) -> f64 {
-    let len: f64 = numbers.len() as f64;
-    numbers.iter().sum::<f64>() / len
-}
-
-fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
-    let variance: f64 = numbers
-        .iter()
-        .map(|x| {
-            let y = x - average;
-            y * y
-        })
-        .sum::<f64>();
-    f64::sqrt(variance)
 }
