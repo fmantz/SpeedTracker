@@ -64,7 +64,7 @@ struct ChartContainer {
 impl HtmlGenerator {
     pub fn write_html(
         data: &Vec<ParsedEntry>,
-        template_path: &Path,
+        template_file: &Path,
         output_file: &Path,
         latency_chart: &ChartConfig<u32>,
         jitter_chart: &ChartConfig<u32>,
@@ -92,60 +92,96 @@ impl HtmlGenerator {
         let response_time_json = serde_json::to_string(&response_time_dss).unwrap();
         let throughput_json = serde_json::to_string(&throughput_dss).unwrap();
 
-        // write files:
-        let find_replacement = Regex::new(REPLACEMENT_REGEX).unwrap();
-        match fs::File::open(template_path) {
-            Err(e) => {
-                let msg = format!("Could not open template file message= '{}'", e);
-                println!("{}", msg);
-                error!("{}", msg);
-            }
-            Ok(f) => {
-                let reader = BufReader::new(f);
-                for maybe_line in reader.lines() {
-                    match maybe_line {
-                        Err(e) => {
-                            let msg = format!("Could not read template file message= '{}'", e);
-                            println!("{}", msg);
-                            error!("{}", msg);
-                        }
-                        Ok(line) => {
-                            match find_replacement.find(&line) {
-                                Some(mat) => {
-                                    //matched string without '${' and '}'
-                                    let matched_string = &line[mat.start() + 2..mat.end() - 1];
-                                    let prefix = &line[0..mat.start()];
-                                    let suffix = &line[mat.end()..line.len()];
-                                    match matched_string {
-                                        REPLACEMENT_ID_RAW_DATA => {
-                                            println!("{}", replace(prefix, "1", suffix))
-                                        }
-                                        REPLACEMENT_ID_STATISTICS => {
-                                            println!("{}", replace(prefix, "2", suffix))
-                                        }
-                                        REPLACEMENT_ID_RESPONSE_TIMES => {
-                                            println!("{}", replace(prefix, "3", suffix))
-                                        }
-                                        REPLACEMENT_ID_THROUGHPUT => {
-                                            println!("{}", replace(prefix, "4", suffix))
-                                        }
-                                        _ => {
-                                            //ignore:
-                                            println!("{}", &line)
-                                        } //restore
-                                    };
-                                    println!("{}", suffix);
-                                }
-                                None => {
-                                    println!("nix")
-                                }
-                            };
-                        }
+        write_output_file(
+            template_file,
+            output_file,
+            &response_time_json,
+            &throughput_json,
+        );
+    }
+}
+
+fn write_output_file(
+    template_file: &Path,
+    output_file: &Path,
+    response_time_json: &str,
+    throughput_json: &str,
+) {
+    // write files:
+    let mut out_file = match fs::OpenOptions::new()
+        .append(false)
+        .create(true)
+        .write(false) // no overwrite
+        .open(output_file)
+    {
+        Err(e) => {
+            let msg = format!("Could not create file message= '{}'", e);
+            error!("{}", msg);
+            panic!("{}", msg);
+        }
+        Ok(f) => f,
+    };
+
+    let find_replacement = Regex::new(REPLACEMENT_REGEX).unwrap();
+    match fs::File::open(template_file) {
+        Err(e) => {
+            let msg = format!("Could not open template file message= '{}'", e);
+            println!("{}", msg);
+            error!("{}", msg);
+        }
+        Ok(f) => {
+            let template_reader = BufReader::new(f);
+            for maybe_line in template_reader.lines() {
+                match maybe_line {
+                    Err(e) => {
+                        let msg = format!("Could not read template file message= '{}'", e);
+                        println!("{}", msg);
+                        error!("{}", msg);
+                    }
+                    Ok(line) => {
+                        match find_replacement.find(&line) {
+                            Some(mat) => {
+                                //matched string without '${' and '}'
+                                let matched_string = &line[mat.start() + 2..mat.end() - 1];
+                                let prefix = &line[0..mat.start()];
+                                let suffix = &line[mat.end()..line.len()];
+                                match matched_string {
+                                    REPLACEMENT_ID_RAW_DATA => {
+                                        println!("{}", replace(prefix, "1", suffix))
+                                    }
+                                    REPLACEMENT_ID_STATISTICS => {
+                                        println!("{}", replace(prefix, "2", suffix))
+                                    }
+                                    REPLACEMENT_ID_RESPONSE_TIMES => {
+                                        println!("{}", replace(prefix, response_time_json, suffix))
+                                    }
+                                    REPLACEMENT_ID_THROUGHPUT => {
+                                        println!("{}", replace(prefix, throughput_json, suffix))
+                                    }
+                                    _ => {
+                                        //ignore:
+                                        println!("{}", &line)
+                                    } //restore
+                                };
+                                println!("{}", suffix);
+                            }
+                            None => {
+                                println!("nix")
+                            }
+                        };
                     }
                 }
             }
         }
     }
+    match out_file.flush() {
+        Err(e) => {
+            let msg = format!("Could not write file message= '{}'", e);
+            error!("{}", msg);
+            panic!("{}", msg);
+        }
+        Ok(()) => (),
+    };
 }
 
 fn replace(prefix: &str, replacement: &str, suffix: &str) -> String {
