@@ -47,11 +47,12 @@ pub struct Server {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Performance {
     pub latency: u32,
     pub jitter: Option<u32>,
-    pub downloadConfig: Option<String>,
-    pub uploadConfig: Option<String>,
+    pub download_config: Option<String>,
+    pub upload_config: Option<String>,
     pub download: Option<f64>,
     pub upload: Option<f64>,
 }
@@ -69,7 +70,9 @@ pub struct ParsedEntry {
 pub struct JsonParser {}
 impl JsonParser {
     pub fn parse(serialized_json: &str) -> Result<ParsedEntry, Error> {
-        serde_json::from_str(&serialized_json)
+        let rs = serde_json::from_str(&serialized_json);
+        //println!("{:?}", rs);
+        rs
     }
 }
 

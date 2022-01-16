@@ -15,6 +15,7 @@ struct Point<N> {
 }
 
 #[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 struct Dataset<N> {
     label: String,
     data: Vec<Point<N>>,
