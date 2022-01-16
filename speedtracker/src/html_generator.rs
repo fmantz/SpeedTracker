@@ -143,7 +143,7 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
 
 // helper methods:
 
-fn create_datasets(config: &&ChartConfig<u32>, points: Vec<Point<u32>>) -> Vec<Dataset<u32>> {
+fn create_datasets<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Vec<Dataset<T>> {
     let expected_ds = config
         .expected_value
         .as_ref()
@@ -154,7 +154,7 @@ fn create_datasets(config: &&ChartConfig<u32>, points: Vec<Point<u32>>) -> Vec<D
 }
 
 /// dataset containing the real data:
-fn create_dataset(config: &ChartConfig<u32>, points: Vec<Point<u32>>) -> Dataset<u32> {
+fn create_dataset<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Dataset<T> {
     Dataset {
         label: String::from(&config.label),
         data: points,
@@ -164,7 +164,7 @@ fn create_dataset(config: &ChartConfig<u32>, points: Vec<Point<u32>>) -> Dataset
 }
 
 /// dataset for expected line:
-fn create_dataset_expected(config: &ExpectedConfig<u32>, points: &Vec<Point<u32>>) -> Dataset<u32> {
+fn create_dataset_expected<T: Copy>(config: &ExpectedConfig<T>, points: &Vec<Point<T>>) -> Dataset<T> {
     let default_x = &String::from("");
     let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
     let last_x: &str = points.last().map(|p| &p.x).unwrap_or(default_x);
@@ -185,12 +185,12 @@ fn create_dataset_expected(config: &ExpectedConfig<u32>, points: &Vec<Point<u32>
     }
 }
 
-/// create chart an do some statitics:
-fn create_chart(
-    config: &&ChartConfig<u32>,
-    dss: Vec<Dataset<u32>>,
+/// create chart an do some statistics:
+fn create_chart<T:Copy>(
+    config: &ChartConfig<T>,
+    dss: Vec<Dataset<T>>,
     mut values: &mut Vec<f64>,
-) -> Chart<u32> {
+) -> Chart<T> {
     let med: f64 = median(&mut values); //is also sorting!
     let avg: f64 = average(&values);
     let std: f64 = standard_deviation(&values, &avg);
