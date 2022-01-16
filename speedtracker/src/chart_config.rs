@@ -23,8 +23,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChartConfig<T> {
-    /// id that is used to position the output in the template
-    pub id: String,
     /// label for the data
     pub label: String,
     /// fill the data or not

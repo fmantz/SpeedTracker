@@ -152,7 +152,6 @@ impl ::std::default::Default for Config {
             log_file: String::from(DEFAULT_LOG_FILE),
             log_file_max_length_in_kb: DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB,
             latency_chart: ChartConfig {
-                id: String::from(DEFAULT_LATENCY_ID),
                 label: String::from(DEFAULT_LATENCY_LABEL),
                 fill: DEFAULT_FILL,
                 border_color: String::from(DEFAULT_LATENCY_COLOR),
@@ -160,7 +159,6 @@ impl ::std::default::Default for Config {
                 expected_value: None,
             },
             jitter_chart: ChartConfig {
-                id: String::from(DEFAULT_JITTER_ID),
                 label: String::from(DEFAULT_JITTER_LABEL),
                 fill: DEFAULT_FILL,
                 border_color: String::from(DEFAULT_JITTER_COLOR),
@@ -168,7 +166,6 @@ impl ::std::default::Default for Config {
                 expected_value: None,
             },
             download_chart: ChartConfig {
-                id: String::from(DEFAULT_DOWNLOAD_ID),
                 label: String::from(DEFAULT_DOWNLOAD_LABEL),
                 fill: DEFAULT_FILL,
                 border_color: String::from(DEFAULT_DOWNLOAD_COLOR),
@@ -181,7 +178,6 @@ impl ::std::default::Default for Config {
                 }),
             },
             upload_chart: ChartConfig {
-                id: String::from(DEFAULT_UPLOAD_ID),
                 label: String::from(DEFAULT_UPLOAD_LABEL),
                 fill: DEFAULT_FILL,
                 border_color: String::from(DEFAULT_UPLOAD_COLOR),

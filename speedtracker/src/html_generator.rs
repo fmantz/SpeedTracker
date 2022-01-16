@@ -24,7 +24,6 @@ struct Dataset<N> {
 }
 
 struct Chart<N> {
-    id: String,
     datasets: Vec<Dataset<N>>,
     median: f64,
     average: f64,
@@ -252,7 +251,6 @@ fn create_chart<T: Copy>(
     let std: f64 = standard_deviation(&values, &avg);
 
     Chart {
-        id: String::from(&config.id),
         datasets: dss,
         median: med,
         average: avg,

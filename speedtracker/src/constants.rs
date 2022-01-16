@@ -46,19 +46,19 @@ pub const DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB: u64 = 8096;
 // charts:
 pub const DEFAULT_FILL: bool = false;
 
-pub const DEFAULT_LATENCY_ID: &'static str = "LATENCY";
+// latency:
 pub const DEFAULT_LATENCY_LABEL: &'static str = "latency";
 pub const DEFAULT_LATENCY_COLOR: &'static str = "green";
 /// in milliseconds
 pub const DEFAULT_LATENCY_VALUE: u32 = 100;
 
-pub const DEFAULT_JITTER_ID: &'static str = "JITTER";
+// jitter:
 pub const DEFAULT_JITTER_LABEL: &'static str = "jitter";
 pub const DEFAULT_JITTER_COLOR: &'static str = "red";
 /// in milliseconds
 pub const DEFAULT_JITTER_VALUE: u32 = 100;
 
-pub const DEFAULT_DOWNLOAD_ID: &'static str = "DOWNLOAD";
+// download:
 pub const DEFAULT_DOWNLOAD_LABEL: &'static str = "download";
 pub const DEFAULT_DOWNLOAD_COLOR: &'static str = "green";
 /// in bits per second, note 1 megabit = 1000000 bits bits per second
@@ -68,7 +68,7 @@ pub const DEFAULT_EXPECTED_DOWNLOAD_COLOR: &'static str = "lime";
 /// in bits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_EXPECTED_DOWNLOAD_VALUE: f64 = 250000000.0;
 
-pub const DEFAULT_UPLOAD_ID: &'static str = "UPLOAD";
+// upload:
 pub const DEFAULT_UPLOAD_LABEL: &'static str = "upload";
 pub const DEFAULT_UPLOAD_COLOR: &'static str = "red";
 /// in bits per second, note 1 megabit = 1000000 bits bits per second
