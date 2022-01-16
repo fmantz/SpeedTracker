@@ -16,7 +16,7 @@
 </head>
 
 <body>
-<div style="width:75%;">
+<div style="width:95%;">
     <canvas id="canvas"></canvas>
 </div>
 <script>
@@ -38,6 +38,10 @@
             scales:     {
                 xAxes: [{
                     type:       "time",
+                    ticks: {
+                      autoSkip: true,
+                      maxTicksLimit: 14
+                    },
                     time:       {
                         format: timeFormat,
                         tooltipFormat: 'll',
