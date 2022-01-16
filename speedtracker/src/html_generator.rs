@@ -147,26 +147,33 @@ fn write_output_file(
                                 let suffix = &line[mat.end()..line.len()];
                                 match matched_string {
                                     REPLACEMENT_ID_RAW_DATA => {
-                                        println!("{}", replace(prefix, "1", suffix))
+                                        println!("{}", "")
                                     }
                                     REPLACEMENT_ID_STATISTICS => {
-                                        println!("{}", replace(prefix, "2", suffix))
+                                        println!("{}", "")
                                     }
                                     REPLACEMENT_ID_RESPONSE_TIMES => {
-                                        println!("{}", replace(prefix, response_time_json, suffix))
+                                        writeln!(
+                                            &mut out_file,
+                                            "{}{}{}",
+                                            prefix, response_time_json, suffix
+                                        );
                                     }
                                     REPLACEMENT_ID_THROUGHPUT => {
-                                        println!("{}", replace(prefix, throughput_json, suffix))
+                                        writeln!(
+                                            &mut out_file,
+                                            "{}{}{}",
+                                            prefix, throughput_json, suffix
+                                        );
                                     }
                                     _ => {
                                         //ignore:
-                                        println!("{}", &line)
-                                    } //restore
+                                        writeln!(&mut out_file, "{}", &line);
+                                    }
                                 };
-                                println!("{}", suffix);
                             }
                             None => {
-                                println!("nix")
+                                writeln!(&mut out_file, "{}", &line);
                             }
                         };
                     }
@@ -182,10 +189,6 @@ fn write_output_file(
         }
         Ok(()) => (),
     };
-}
-
-fn replace(prefix: &str, replacement: &str, suffix: &str) -> String {
-    format!("{}{}{}", prefix, replacement, suffix)
 }
 
 /// prepare data to show latency:
