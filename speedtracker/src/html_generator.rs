@@ -1,10 +1,34 @@
+// Copyright (c) 2022 Florian Mantz
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+use log::error;
+use regex::Regex;
+use serde::Serialize;
+use std::f64;
+use std::fs;
+use std::io::{self, prelude::*, BufReader, Write};
 use std::path::Path;
 
 use crate::chart_config::*;
 use crate::constants::*;
 use crate::json_parser::*;
-use serde::Serialize;
-use std::f64;
 
 pub struct HtmlGenerator {}
 
@@ -64,22 +88,68 @@ impl HtmlGenerator {
             .iter()
             .chain(upl_chart.datasets.iter())
             .collect();
+
         let response_time_json = serde_json::to_string(&response_time_dss).unwrap();
         let throughput_json = serde_json::to_string(&throughput_dss).unwrap();
 
-        println!("T1 {}", &response_time_json);
-        println!("T2 {}", &throughput_json); //TODO: write error also to console
+        // write files:
+        let find_replacement = Regex::new(REPLACEMENT_REGEX).unwrap();
+        match fs::File::open(template_path) {
+            Err(e) => {
+                let msg = format!("Could not open template file message= '{}'", e);
+                println!("{}", msg);
+                error!("{}", msg);
+            }
+            Ok(f) => {
+                let reader = BufReader::new(f);
+                for maybe_line in reader.lines() {
+                    match maybe_line {
+                        Err(e) => {
+                            let msg = format!("Could not read template file message= '{}'", e);
+                            println!("{}", msg);
+                            error!("{}", msg);
+                        }
+                        Ok(line) => {
+                            match find_replacement.find(&line) {
+                                Some(mat) => {
+                                    //matched string without '${' and '}'
+                                    let matched_string = &line[mat.start() + 2..mat.end() - 1];
+                                    let prefix = &line[0..mat.start()];
+                                    let suffix = &line[mat.end()..line.len()];
+                                    match matched_string {
+                                        REPLACEMENT_ID_RAW_DATA => {
+                                            println!("{}", replace(prefix, "1", suffix))
+                                        }
+                                        REPLACEMENT_ID_STATISTICS => {
+                                            println!("{}", replace(prefix, "2", suffix))
+                                        }
+                                        REPLACEMENT_ID_RESPONSE_TIMES => {
+                                            println!("{}", replace(prefix, "3", suffix))
+                                        }
+                                        REPLACEMENT_ID_THROUGHPUT => {
+                                            println!("{}", replace(prefix, "4", suffix))
+                                        }
+                                        _ => {
+                                            //ignore:
+                                            println!("{}", &line)
+                                        } //restore
+                                    };
+                                    println!("{}", suffix);
+                                }
+                                None => {
+                                    println!("nix")
+                                }
+                            };
+                        }
+                    }
+                }
+            }
+        }
     }
+}
 
-    //map id -> Vec<datasets>
-
-    //table1
-
-    //performance ...
-
-    //table2
-
-    //average median and standard_deviation in eigener tabelle
+fn replace(prefix: &str, replacement: &str, suffix: &str) -> String {
+    format!("{}{}{}", prefix, replacement, suffix)
 }
 
 /// prepare data to show latency:
