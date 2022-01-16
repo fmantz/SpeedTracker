@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use crate::chart_config::*;
 use crate::constants::*;
 use crate::json_parser::*;
 use serde::Serialize;
@@ -37,7 +38,15 @@ struct ChartContainer {
 }
 
 impl HtmlGenerator {
-    pub fn write_html(data: &Vec<ParsedEntry>, template_path: &Path, output_file: &Path) {
+    pub fn write_html(
+        data: &Vec<ParsedEntry>,
+        template_path: &Path,
+        output_file: &Path,
+        latency_chart: &ChartConfig<u32>,
+        jitter_chart: &ChartConfig<u32>,
+        download_chart: &ChartConfig<f64>,
+        upload_chart: &ChartConfig<f64>,
+    ) {
         /*
           let ds: Vec<Point<u32>> = data
               .iter()
@@ -48,7 +57,7 @@ impl HtmlGenerator {
               })
               .collect();
         */
-        let ds = create_latency_chart(&data, &100).datasets;
+        let ds = create_latency_chart(data, latency_chart).datasets;
 
         let json = serde_json::to_string(&ds).unwrap();
 
@@ -65,15 +74,16 @@ impl HtmlGenerator {
 
     //map id -> Vec<datasets>
 
-    //table
+    //table1
+
+    //performance ...
+
+    //table2
 
     //average median and standard_deviation in eigener tabelle
 }
 
-fn create_latency_chart(
-    data: &Vec<ParsedEntry>,
-    error_latency: &u32, //todo add everythink into one config object
-) -> Chart<u32> {
+fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
     let points: Vec<Point<u32>> = data
         .iter()
         .map(|d| {
@@ -82,16 +92,16 @@ fn create_latency_chart(
                 .performance
                 .as_ref()
                 .map(|p| &p.latency)
-                .unwrap_or(error_latency);
+                .unwrap_or(&config.default_value);
             Point { x, y }
         })
         .collect();
 
     let ds = Dataset {
-        label: "".to_string(), //TODO
+        label: String::from(&config.label),
         data: points,
-        fill: false,                  //TODO
-        border_color: "".to_string(), //TODO
+        fill: false,
+        border_color: String::from(&config.border_color),
     };
 
     let mut values: Vec<f64> = data
@@ -108,7 +118,7 @@ fn create_latency_chart(
     let std: f64 = standard_deviation(&values, &avg);
 
     Chart {
-        id: "".to_string(),
+        id: String::from(&config.id),
         datasets: vec![ds],
         median: med,
         average: avg,

@@ -38,11 +38,13 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
 
+use crate::chart_config::*;
 use crate::constants::*;
 use crate::html_generator::HtmlGenerator;
 use crate::json_parser::JsonParser;
 use crate::json_parser::ParsedEntry;
 
+mod chart_config;
 mod constants;
 mod html_generator;
 mod json_parser;
@@ -59,6 +61,14 @@ pub struct Config {
     log_file: String,
     /// maximal size of log file in kb before the file is rotated
     log_file_max_length_in_kb: u64,
+    /// latency_chart configuration
+    latency_chart: ChartConfig<u32>,
+    /// jitter_chart configuration
+    jitter_chart: ChartConfig<u32>,
+    /// download_chart configuration
+    download_chart: ChartConfig<f64>,
+    /// upload_chart configuration
+    upload_chart: ChartConfig<f64>,
 }
 
 #[derive(Debug)]
@@ -82,6 +92,14 @@ pub struct Setup {
     /// from anywhere and read the config an template file always
     /// from the same place
     working_dir: String,
+    /// latency_chart configuration
+    latency_chart: ChartConfig<u32>,
+    /// jitter_chart configuration
+    jitter_chart: ChartConfig<u32>,
+    /// download_chart configuration
+    download_chart: ChartConfig<f64>,
+    /// upload_chart configuration
+    upload_chart: ChartConfig<f64>,
 }
 
 impl Setup {
@@ -117,6 +135,10 @@ impl Setup {
             data,
             &Path::new(&self.working_dir).join(TEMPLATE_FILENAME),
             &Path::new(&self.output_file),
+            &self.latency_chart,
+            &self.jitter_chart,
+            &self.download_chart,
+            &self.upload_chart,
         );
     }
 }
@@ -129,6 +151,48 @@ impl ::std::default::Default for Config {
             output_xdays: DEFAULT_OUTPUT_XDAYS,
             log_file: String::from(DEFAULT_LOG_FILE),
             log_file_max_length_in_kb: DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB,
+            latency_chart: ChartConfig {
+                id: String::from(DEFAULT_LATENCY_ID),
+                label: String::from(DEFAULT_LATENCY_LABEL),
+                fill: DEFAULT_FILL,
+                border_color: String::from(DEFAULT_LATENCY_COLOR),
+                default_value: DEFAULT_LATENCY_VALUE,
+                expected_value: None,
+            },
+            jitter_chart: ChartConfig {
+                id: String::from(DEFAULT_JITTER_ID),
+                label: String::from(DEFAULT_JITTER_LABEL),
+                fill: DEFAULT_FILL,
+                border_color: String::from(DEFAULT_JITTER_COLOR),
+                default_value: DEFAULT_JITTER_VALUE,
+                expected_value: None,
+            },
+            download_chart: ChartConfig {
+                id: String::from(DEFAULT_DOWNLOAD_ID),
+                label: String::from(DEFAULT_DOWNLOAD_LABEL),
+                fill: DEFAULT_FILL,
+                border_color: String::from(DEFAULT_DOWNLOAD_COLOR),
+                default_value: DEFAULT_DOWNLOAD_VALUE,
+                expected_value: Some(ExpectedConfig {
+                    label: String::from(DEFAULT_EXPECTED_DOWNLOAD_LABEL),
+                    fill: DEFAULT_FILL,
+                    border_color: String::from(DEFAULT_EXPECTED_DOWNLOAD_COLOR),
+                    value: DEFAULT_EXPECTED_DOWNLOAD_VALUE,
+                }),
+            },
+            upload_chart: ChartConfig {
+                id: String::from(DEFAULT_UPLOAD_ID),
+                label: String::from(DEFAULT_UPLOAD_LABEL),
+                fill: DEFAULT_FILL,
+                border_color: String::from(DEFAULT_UPLOAD_COLOR),
+                default_value: DEFAULT_UPLOAD_VALUE,
+                expected_value: Some(ExpectedConfig {
+                    label: String::from(DEFAULT_EXPECTED_UPLOAD_LABEL),
+                    fill: DEFAULT_FILL,
+                    border_color: String::from(DEFAULT_EXPECTED_UPLOAD_COLOR),
+                    value: DEFAULT_EXPECTED_UPLOAD_VALUE,
+                }),
+            },
         }
     }
 }
@@ -200,6 +264,10 @@ pub fn config_to_setup_for_mode_1(working_dir: &Path, config: Config) -> Setup {
         to_date: today,
         output_file: config.output_file,
         working_dir: working_dir.to_str().unwrap().to_string(),
+        latency_chart: config.latency_chart,
+        jitter_chart: config.jitter_chart,
+        download_chart: config.download_chart,
+        upload_chart: config.upload_chart,
     }
 }
 
@@ -240,6 +308,10 @@ pub fn config_to_setup_for_mode_2(
         to_date: to_date_as_nd,
         output_file: output_file.to_string(),
         working_dir: working_dir.to_str().unwrap().to_string(),
+        latency_chart: config.latency_chart,
+        jitter_chart: config.jitter_chart,
+        download_chart: config.download_chart,
+        upload_chart: config.upload_chart,
     }
 }
 

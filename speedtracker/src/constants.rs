@@ -42,3 +42,38 @@ pub const DEFAULT_OUTPUT_FILE: &'static str = "./index.html";
 pub const DEFAULT_OUTPUT_XDAYS: u32 = 14;
 pub const DEFAULT_LOG_FILE: &'static str = "./speedtracker.log";
 pub const DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB: u64 = 8096;
+
+// charts:
+pub const DEFAULT_FILL: bool = false;
+
+pub const DEFAULT_LATENCY_ID: &'static str = "LATENCY";
+pub const DEFAULT_LATENCY_LABEL: &'static str = "latency";
+pub const DEFAULT_LATENCY_COLOR: &'static str = "green";
+/// in milliseconds
+pub const DEFAULT_LATENCY_VALUE: u32 = 100;
+
+pub const DEFAULT_JITTER_ID: &'static str = "JITTER";
+pub const DEFAULT_JITTER_LABEL: &'static str = "jitter";
+pub const DEFAULT_JITTER_COLOR: &'static str = "red";
+/// in milliseconds
+pub const DEFAULT_JITTER_VALUE: u32 = 100;
+
+pub const DEFAULT_DOWNLOAD_ID: &'static str = "DOWNLOAD";
+pub const DEFAULT_DOWNLOAD_LABEL: &'static str = "download";
+pub const DEFAULT_DOWNLOAD_COLOR: &'static str = "green";
+/// in bits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_DOWNLOAD_VALUE: f64 = 0.0;
+pub const DEFAULT_EXPECTED_DOWNLOAD_LABEL: &'static str = "expected download";
+pub const DEFAULT_EXPECTED_DOWNLOAD_COLOR: &'static str = "lime";
+/// in bits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_EXPECTED_DOWNLOAD_VALUE: f64 = 250000000.0;
+
+pub const DEFAULT_UPLOAD_ID: &'static str = "UPLOAD";
+pub const DEFAULT_UPLOAD_LABEL: &'static str = "upload";
+pub const DEFAULT_UPLOAD_COLOR: &'static str = "red";
+/// in bits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_UPLOAD_VALUE: f64 = 0.0;
+pub const DEFAULT_EXPECTED_UPLOAD_LABEL: &'static str = "expected upload";
+pub const DEFAULT_EXPECTED_UPLOAD_COLOR: &'static str = "orange";
+/// in bits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_EXPECTED_UPLOAD_VALUE: f64 = 25000000.0;
