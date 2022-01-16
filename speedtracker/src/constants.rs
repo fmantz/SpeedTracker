@@ -50,13 +50,13 @@ pub const DEFAULT_FILL: bool = false;
 pub const DEFAULT_LATENCY_LABEL: &'static str = "latency";
 pub const DEFAULT_LATENCY_COLOR: &'static str = "green";
 /// in milliseconds
-pub const DEFAULT_LATENCY_VALUE: u32 = 100;
+pub const DEFAULT_LATENCY_VALUE: u32 = 30;
 
 // jitter:
 pub const DEFAULT_JITTER_LABEL: &'static str = "jitter";
 pub const DEFAULT_JITTER_COLOR: &'static str = "red";
 /// in milliseconds
-pub const DEFAULT_JITTER_VALUE: u32 = 100;
+pub const DEFAULT_JITTER_VALUE: u32 = 30;
 
 // download:
 pub const DEFAULT_DOWNLOAD_LABEL: &'static str = "download";

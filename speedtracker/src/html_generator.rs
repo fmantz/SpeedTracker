@@ -67,8 +67,8 @@ impl HtmlGenerator {
         let response_time_json = serde_json::to_string(&response_time_dss).unwrap();
         let throughput_json = serde_json::to_string(&throughput_dss).unwrap();
 
-        println!("Test {}", &response_time_json);
-        println!("Test {}", &throughput_json); //TODO: write error also to console
+        println!("T1 {}", &response_time_json);
+        println!("T2 {}", &throughput_json); //TODO: write error also to console
     }
 
     //map id -> Vec<datasets>
