@@ -48,19 +48,12 @@ impl HtmlGenerator {
         download_chart: &ChartConfig<f64>,
         upload_chart: &ChartConfig<f64>,
     ) {
-        /*
-          let ds: Vec<Point<u32>> = data
-              .iter()
-              .map(|d| {
-                  let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
-                  let y = *d.performance.as_ref().map(|p| &p.latency).unwrap_or(&100);
-                  Point { x, y }
-              })
-              .collect();
-        */
-        let ds = create_latency_chart(data, latency_chart).datasets;
+        let lat_chart = create_latency_chart(data, latency_chart);
+        let jit_chart = create_jitter_chart(data, jitter_chart);
+        let dwn_chart = create_download_chart(data, download_chart);
+        let upl_chart = create_upload_chart(data, upload_chart);
 
-        let json = serde_json::to_string(&ds).unwrap();
+        let json = serde_json::to_string(&lat_chart.datasets).unwrap();
 
         println!("Test {}", &json); //TODO: write error also to console
     }
@@ -84,6 +77,7 @@ impl HtmlGenerator {
     //average median and standard_deviation in eigener tabelle
 }
 
+/// prepare data to show latency:
 fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
     let points: Vec<Point<u32>> = data
         .iter()
@@ -112,6 +106,7 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
     create_chart(&config, dss, &mut values)
 }
 
+/// prepare data to show jitter:
 fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
     let points: Vec<Point<u32>> = data
         .iter()
@@ -141,6 +136,64 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
     create_chart(&config, dss, &mut values)
 }
 
+/// prepare data to download speed:
+fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+    let points: Vec<Point<f64>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y: f64 = d
+                .performance
+                .as_ref()
+                .map(|p| p.download.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.download);
+            y
+        })
+        .flatten()
+        .collect();
+
+    create_chart(&config, dss, &mut values)
+}
+
+/// prepare data to upload speed:
+fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+    let points: Vec<Point<f64>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y: f64 = d
+                .performance
+                .as_ref()
+                .map(|p| p.upload.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let dss = create_datasets(&config, points);
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance.as_ref().map(|p| p.upload);
+            y
+        })
+        .flatten()
+        .collect();
+
+    create_chart(&config, dss, &mut values)
+}
+
 // helper methods:
 
 fn create_datasets<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Vec<Dataset<T>> {
@@ -164,7 +217,10 @@ fn create_dataset<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Da
 }
 
 /// dataset for expected line:
-fn create_dataset_expected<T: Copy>(config: &ExpectedConfig<T>, points: &Vec<Point<T>>) -> Dataset<T> {
+fn create_dataset_expected<T: Copy>(
+    config: &ExpectedConfig<T>,
+    points: &Vec<Point<T>>,
+) -> Dataset<T> {
     let default_x = &String::from("");
     let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
     let last_x: &str = points.last().map(|p| &p.x).unwrap_or(default_x);
@@ -186,7 +242,7 @@ fn create_dataset_expected<T: Copy>(config: &ExpectedConfig<T>, points: &Vec<Poi
 }
 
 /// create chart an do some statistics:
-fn create_chart<T:Copy>(
+fn create_chart<T: Copy>(
     config: &ChartConfig<T>,
     dss: Vec<Dataset<T>>,
     mut values: &mut Vec<f64>,
