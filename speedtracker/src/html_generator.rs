@@ -66,16 +66,23 @@ impl HtmlGenerator {
         data: &Vec<ParsedEntry>,
         template_file: &Path,
         output_file: &Path,
-        latency_chart: &ChartConfig<u32>,
-        jitter_chart: &ChartConfig<u32>,
-        download_chart: &ChartConfig<f64>,
-        upload_chart: &ChartConfig<f64>,
+        config_latency_chart: &ChartConfig<u32>,
+        config_jitter_chart: &ChartConfig<u32>,
+        config_download_chart: &ChartConfig<f64>,
+        config_upload_chart: &ChartConfig<f64>,
     ) {
         //create chart data;
-        let lat_chart = create_latency_chart(data, latency_chart);
-        let jit_chart = create_jitter_chart(data, jitter_chart);
-        let dwn_chart = create_download_chart(data, download_chart);
-        let upl_chart = create_upload_chart(data, upload_chart);
+        let lat_chart = create_latency_chart(data, config_latency_chart);
+        let jit_chart = create_jitter_chart(data, config_jitter_chart);
+        let dwn_chart = create_download_chart(data, config_download_chart);
+        let upl_chart = create_upload_chart(data, config_upload_chart);
+
+        let stat_lat = create_statistic_table(ID_LATENCY, config_latency_chart, &lat_chart);
+        let stat_jit = create_statistic_table(ID_JITTER, config_jitter_chart, &jit_chart);
+        let stat_dwn = create_statistic_table(ID_DOWNLOAD, config_download_chart, &dwn_chart);
+        let stat_upl = create_statistic_table(ID_UPLOAD, config_upload_chart, &upl_chart);
+
+        let statistics_table = create_statistics_table(stat_lat, stat_jit, stat_dwn, stat_upl);
 
         //transform chart data to json
         let response_time_dss: Vec<&Dataset<u32>> = lat_chart
@@ -97,6 +104,7 @@ impl HtmlGenerator {
             output_file,
             &response_time_json,
             &throughput_json,
+            &statistics_table,
         );
     }
 }
@@ -106,6 +114,7 @@ fn write_output_file(
     output_file: &Path,
     response_time_json: &str,
     throughput_json: &str,
+    statistics_table: &str,
 ) {
     // write files:
     let mut out_file = match fs::OpenOptions::new()
@@ -189,6 +198,61 @@ fn write_output_file(
         }
         Ok(()) => (),
     };
+}
+
+fn create_statistics_table(
+    stat_lat: String,
+    stat_jit: String,
+    stat_dwn: String,
+    stat_upl: String,
+) -> String {
+    format!(
+        "<table id=\"statistic\">\n
+              <tr>\n
+                <th>{}</th>\n
+                <th>{}</th>\n
+              </tr>
+              <tr>\n
+                <td>{}</td>\n
+                <td>{}</td>\n
+              </tr>\n
+            </table>\n
+        ",
+        stat_lat, stat_jit, stat_dwn, stat_upl
+    )
+}
+
+fn create_statistic_table<N: Copy>(
+    id: &str,
+    chart_config: &ChartConfig<N>,
+    chart: &Chart<N>,
+) -> String {
+    format!(
+        "<table id=\"statistic_{}\">\n
+              <tr>\n
+                <th colspan=\"3\">{}</th>\n
+              </tr>
+              <tr>\n
+                <th>{}</th>\n
+                <th>{}</th>\n
+                <th>{}</th>\n
+              </tr>
+              <tr>\n
+                <td>{}</td>\n
+                <td>{}</td>\n
+                <td>{}</td>\n
+              </tr>\n
+            </table>\n
+        ",
+        id,
+        chart_config.label,
+        STATISTIC_MEDIAN,
+        STATISTIC_AVG,
+        STATISTIC_STD,
+        chart.median,
+        chart.average,
+        chart.standard_deviation
+    )
 }
 
 /// prepare data to show latency:

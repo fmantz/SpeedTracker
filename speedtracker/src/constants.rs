@@ -83,3 +83,12 @@ pub const REPLACEMENT_ID_STATISTICS: &'static str = "STATISTICS";
 pub const REPLACEMENT_ID_RAW_DATA: &'static str = "RAW_DATA";
 pub const REPLACEMENT_ID_RESPONSE_TIMES: &'static str = "RESPONSE_TIMES";
 pub const REPLACEMENT_ID_THROUGHPUT: &'static str = "THROUGHPUT";
+
+pub const ID_LATENCY: &'static str = "latency";
+pub const ID_JITTER: &'static str = "jitter";
+pub const ID_DOWNLOAD: &'static str = "download";
+pub const ID_UPLOAD: &'static str = "upload";
+
+pub const STATISTIC_MEDIAN: &'static str = "median";
+pub const STATISTIC_AVG: &'static str = "average";
+pub const STATISTIC_STD: &'static str = "standard-deviation";
