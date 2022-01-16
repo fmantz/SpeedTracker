@@ -17,17 +17,64 @@
 
 <body>
 <div style="width:95%;">
-    <canvas id="canvas"></canvas>
+    ${STATISTICS}
+</div>
+<div style="width:95%;">
+    <canvas id="canvas_response_times"></canvas>
+</div>
+<div style="width:95%;">
+    <canvas id="canvas_throughput"></canvas>
+</div>
+<div style="width:95%;">
+    ${RAW_DATA}
 </div>
 <script>
 
     var timeFormat = 'YYYY-MM-DD HH:mm:ss';
     var timeFormatReduced = 'YYYY-MM-DD HH:mm';
 
-    var config = {
+    var config_response_times = {
         type:    'line',
         data:    {
-            datasets: [{"label":"latency","data":[{"x":"2022-01-12 20:30:01","y":4},{"x":"2022-01-12 20:30:01","y":4},{"x":"2022-01-12 20:30:01","y":4},{"x":"2022-01-15 14:23:44","y":5}],"fill":false,"borderColor":"green"},{"label":"jitter","data":[{"x":"2022-01-12 20:30:01","y":5},{"x":"2022-01-12 20:30:01","y":10},{"x":"2022-01-12 20:30:01","y":10},{"x":"2022-01-15 14:23:44","y":13}],"fill":false,"borderColor":"red"}]
+            datasets: ${RESPONSE_TIMES}
+        },
+        options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Chart.js Time Scale"
+            },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    ticks: {
+                      autoSkip: true,
+                      maxTicksLimit: 14
+                    },
+                    time:       {
+                        format: timeFormat,
+                        tooltipFormat: 'll',
+                        displayFormat: timeFormatReduced
+                    },
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'value'
+                    }
+                }]
+            }
+        }
+    };
+
+    var config_throughput = {
+        type:    'line',
+        data:    {
+            datasets: ${THROUGHPUT}
         },
         options: {
             responsive: true,
@@ -63,8 +110,11 @@
     };
 
     window.onload = function () {
-        var ctx       = document.getElementById("canvas").getContext("2d");
-        window.myLine = new Chart(ctx, config);
+        var ctx_response_times = document.getElementById("canvas_response_times").getContext("2d");
+        window.myLine = new Chart(ctx_response_times, config_response_times);
+
+        var ctx_throughput = document.getElementById("canvas_throughput").getContext("2d");
+        window.myLine = new Chart(ctx_throughput, config_throughput);
     };
 
 </script>

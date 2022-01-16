@@ -124,7 +124,7 @@ fn write_output_file(
     let mut out_file = match fs::OpenOptions::new()
         .append(false)
         .create(true)
-        .write(false) // no overwrite
+        .write(true)
         .open(output_file)
     {
         Err(e) => {
@@ -436,7 +436,7 @@ fn write_raw_data(data: &Vec<ParsedEntry>, out_file: &mut File, prefix: &str, su
         writeln!(
             out_file,
             "<tr>
-                 <td class=\"ts\">{:?}</td>",
+                 <td class=\"ts\">{}</td>",
             entry.timestamp.format(DATE_TIME_FORMAT)
         );
         if let Some(client) = &entry.client {

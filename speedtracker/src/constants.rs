@@ -78,11 +78,11 @@ pub const DEFAULT_EXPECTED_UPLOAD_COLOR: &'static str = "orange";
 /// in bits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_EXPECTED_UPLOAD_VALUE: f64 = 25000000.0;
 
-pub const REPLACEMENT_REGEX: &'static str = r"\$\{[[:alpha:]]*\}";
+pub const REPLACEMENT_REGEX: &'static str = r"\$\{([[:alpha:]]|_)*\}";
 pub const REPLACEMENT_ID_STATISTICS: &'static str = "STATISTICS";
-pub const REPLACEMENT_ID_RAW_DATA: &'static str = "RAW_DATA";
 pub const REPLACEMENT_ID_RESPONSE_TIMES: &'static str = "RESPONSE_TIMES";
 pub const REPLACEMENT_ID_THROUGHPUT: &'static str = "THROUGHPUT";
+pub const REPLACEMENT_ID_RAW_DATA: &'static str = "RAW_DATA";
 
 pub const ID_LATENCY: &'static str = "latency";
 pub const ID_JITTER: &'static str = "jitter";

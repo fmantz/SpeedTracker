@@ -54,7 +54,7 @@ fn main() {
         };
 
         // run speed test:
-        //setup.maybe_speed_test();
+        setup.maybe_speed_test();
 
         // parse and filter data:
         let parsed_data = setup.read_data();
