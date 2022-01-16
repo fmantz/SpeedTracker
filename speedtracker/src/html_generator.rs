@@ -101,17 +101,20 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
     let ds = Dataset {
         label: String::from(&config.label),
         data: points,
-        fill: false,
+        fill: config.fill,
         border_color: String::from(&config.border_color),
     };
 
     let mut values: Vec<f64> = data
         .iter()
         .flat_map(|d| {
-            let y = d.performance.as_ref().map(|p| &p.latency);
+            let y = d
+                .performance
+                .as_ref()
+                .map(|p| p.latency);
             y
         })
-        .map(|x| *x as f64)
+        .map(|x| x as f64)
         .collect();
 
     let med: f64 = median(&mut values); //is also sorting!
@@ -126,6 +129,54 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
         standard_deviation: std,
     }
 }
+
+fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
+    let points: Vec<Point<u32>> = data
+        .iter()
+        .map(|d| {
+            let x: String = d.timestamp.format(DATE_TIME_FORMAT).to_string();
+            let y:u32 = d
+                .performance
+                .as_ref()
+                .map(|p| p.jitter.unwrap_or(config.default_value))
+                .unwrap();
+            Point { x, y }
+        })
+        .collect();
+
+    let ds = Dataset {
+        label: String::from(&config.label),
+        data: points,
+        fill: config.fill,
+        border_color: String::from(&config.border_color),
+    };
+
+    let mut values: Vec<f64> = data
+        .iter()
+        .flat_map(|d| {
+            let y = d.performance
+                .as_ref()
+                .map(|p| p.jitter);
+            y
+        })
+        .flatten()
+        .map(|x| x as f64)
+        .collect();
+
+    let med: f64 = median(&mut values); //is also sorting!
+    let avg: f64 = average(&values);
+    let std: f64 = standard_deviation(&values, &avg);
+
+    Chart {
+        id: String::from(&config.id),
+        datasets: vec![ds],
+        median: med,
+        average: avg,
+        standard_deviation: std,
+    }
+}
+
+
 
 fn median(numbers: &mut Vec<f64>) -> f64 {
     numbers.sort_by(|a, b| a.partial_cmp(b).unwrap());
