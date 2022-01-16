@@ -102,9 +102,10 @@ impl HtmlGenerator {
         write_output_file(
             template_file,
             output_file,
+            data,
+            &statistics_table,
             &response_time_json,
             &throughput_json,
-            &statistics_table,
         );
     }
 }
@@ -112,9 +113,10 @@ impl HtmlGenerator {
 fn write_output_file(
     template_file: &Path,
     output_file: &Path,
+    data: &Vec<ParsedEntry>,
+    statistics_table: &str,
     response_time_json: &str,
     throughput_json: &str,
-    statistics_table: &str,
 ) {
     // write files:
     let mut out_file = match fs::OpenOptions::new()
@@ -156,11 +158,111 @@ fn write_output_file(
                                 let suffix = &line[mat.end()..line.len()];
                                 match matched_string {
                                     REPLACEMENT_ID_RAW_DATA => {
-                                        println!("{}", "")
+                                        writeln!(
+                                            &mut out_file,
+                                           "<table id=\"rawdata\">\n
+                                            <tr>\n
+                                                <th class=\"ts\">timestamp</th>\n
+                                                <th class=\"client\">client-wlan</th>\n
+                                                <th class=\"client\">client-ip</th>\n
+                                                <th class=\"client\">client-lat</th>\n
+                                                <th class=\"client\">client-lon</th>\n
+                                                <th class=\"client\">client-isp</th>\n
+                                                <th class=\"server\">server-name</th>\n
+                                                <th class=\"server\">server-sponsor</th>\n
+                                                <th class=\"server\">server-distance</th>\n
+                                                <th class=\"server\">server-host</th>\n
+                                                <th class=\"performance\">latency</th>\n
+                                                <th class=\"performance\">jitter</th>\n
+                                                <th class=\"performance\">download_config</th>\n
+                                                <th class=\"performance\">upload_config</th>\n
+                                                <th class=\"performance\">download</th>\n
+                                                <th class=\"performance\">upload</th>\n
+                                             </tr>\n"
+                                        );
+                                        for entry in data {
+                                            writeln!(
+                                                &mut out_file,
+                                                "<tr>
+                                                  <td class=\"ts\">{:?}</td>",
+                                                entry.timestamp.format(DATE_TIME_FORMAT)
+                                            );
+                                            if let Some(client) = &entry.client {
+                                               writeln!(
+                                                    &mut out_file,
+                                                    "<td class=\"client\">{:?}</td>
+                                                     <td class=\"client\">{:?}</td>
+                                                     <td class=\"client\">{:?}</td>
+                                                     <td class=\"client\">{:?}</td>
+                                                     <td class=\"client\">{:?}</td>",
+                                                     client.wlan,
+                                                     client.ip,
+                                                     client.lat,
+                                                     client.lon,
+                                                     client.isp
+                                               );
+                                            } else {
+                                               writeln!(
+                                                    &mut out_file,
+                                                    "<td colspan=\"5\" class=\"client\"></td>"
+                                               );
+                                            }
+                                            if let Some(server) = &entry.server {
+                                                writeln!(
+                                                    &mut out_file,
+                                                    "<td class=\"server\">{:?}</td>
+                                                     <td class=\"server\">{:?}</td>
+                                                     <td class=\"server\">{:?}</td>
+                                                     <td class=\"server\">{:?}</td>",
+                                                     server.name,
+                                                     server.sponsor,
+                                                     server.distance,
+                                                     server.host
+                                                );
+                                            } else {
+                                                writeln!(
+                                                    &mut out_file,
+                                                    "<td colspan=\"4\" class=\"server\"></td>"
+                                                );
+                                            }
+                                            if let Some(performance) = &entry.performance {
+                                                writeln!(
+                                                    &mut out_file,
+                                                    "<td class=\"performance\">{:?}</td>
+                                                     <td class=\"performance\">{:?}</td>
+                                                     <td class=\"performance\">{:?}</td>
+                                                     <td class=\"performance\">{:?}</td>
+                                                     <td class=\"performance\">{:?}</td>
+                                                     <td class=\"performance\">{:?}</td>",
+                                                     performance.latency,
+                                                     performance.jitter,
+                                                     performance.download_config,
+                                                     performance.upload_config,
+                                                     performance.download,
+                                                     performance.upload
+                                                );
+                                            } else {
+                                                writeln!(
+                                                    &mut out_file,
+                                                    "<td colspan=\"6\" class=\"performance\"></td>"
+                                                );
+                                            }
+                                            writeln!(
+                                                &mut out_file,
+                                                "</tr>"
+                                            );
+                                        }
+                                        writeln!(
+                                            &mut out_file,
+                                            "</table>"
+                                        );
                                     }
                                     REPLACEMENT_ID_STATISTICS => {
-                                        println!("{}", "")
-                                    }
+                                        writeln!(
+                                            &mut out_file,
+                                            "{}{}{}",
+                                            prefix, statistics_table, suffix
+                                        );                                    }
                                     REPLACEMENT_ID_RESPONSE_TIMES => {
                                         writeln!(
                                             &mut out_file,
