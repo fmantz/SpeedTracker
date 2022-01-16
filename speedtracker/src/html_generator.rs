@@ -98,12 +98,7 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
         })
         .collect();
 
-    let expected_ds = config
-        .expected_value
-        .as_ref()
-        .map(|c| create_dataset_expected(c, &points));
-
-    let ds = create_dataset(&config, points);
+    let dss = create_datasets(&config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -114,7 +109,7 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
         .map(|x| x as f64)
         .collect();
 
-    create_chart(&config, ds, &mut values, expected_ds)
+    create_chart(&config, dss, &mut values)
 }
 
 fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
@@ -131,12 +126,7 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
         })
         .collect();
 
-    let expected_ds = config
-        .expected_value
-        .as_ref()
-        .map(|c| create_dataset_expected(c, &points));
-
-    let ds = create_dataset(&config, points);
+    let dss = create_datasets(&config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -148,9 +138,22 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
         .map(|x| x as f64)
         .collect();
 
-    create_chart(&config, ds, &mut values, expected_ds)
+    create_chart(&config, dss, &mut values)
 }
 
+// helper methods:
+
+fn create_datasets(config: &&ChartConfig<u32>, points: Vec<Point<u32>>) -> Vec<Dataset<u32>> {
+    let expected_ds = config
+        .expected_value
+        .as_ref()
+        .map(|c| create_dataset_expected(c, &points));
+
+    let ds = create_dataset(&config, points);
+    vec![Some(ds), expected_ds].into_iter().flatten().collect()
+}
+
+/// dataset containing the real data:
 fn create_dataset(config: &ChartConfig<u32>, points: Vec<Point<u32>>) -> Dataset<u32> {
     Dataset {
         label: String::from(&config.label),
@@ -160,6 +163,7 @@ fn create_dataset(config: &ChartConfig<u32>, points: Vec<Point<u32>>) -> Dataset
     }
 }
 
+/// dataset for expected line:
 fn create_dataset_expected(config: &ExpectedConfig<u32>, points: &Vec<Point<u32>>) -> Dataset<u32> {
     let default_x = &String::from("");
     let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
@@ -181,11 +185,11 @@ fn create_dataset_expected(config: &ExpectedConfig<u32>, points: &Vec<Point<u32>
     }
 }
 
+/// create chart an do some statitics:
 fn create_chart(
     config: &&ChartConfig<u32>,
-    ds: Dataset<u32>,
+    dss: Vec<Dataset<u32>>,
     mut values: &mut Vec<f64>,
-    expected_ds: Option<Dataset<u32>>,
 ) -> Chart<u32> {
     let med: f64 = median(&mut values); //is also sorting!
     let avg: f64 = average(&values);
@@ -193,7 +197,7 @@ fn create_chart(
 
     Chart {
         id: String::from(&config.id),
-        datasets: vec![Some(ds), expected_ds].into_iter().flatten().collect(),
+        datasets: dss,
         median: med,
         average: avg,
         standard_deviation: std,
