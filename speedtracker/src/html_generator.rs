@@ -381,15 +381,15 @@ fn create_chart<T: Copy>(
     mut values: &mut Vec<f64>,
     divisor: f64,
 ) -> Chart<T> {
-    let med: f64 = median(&mut values) / divisor; //is also sorting!
-    let avg: f64 = average(&values) / divisor;
-    let std: f64 = standard_deviation(&values, &avg) / divisor;
+    let med: f64 = median(&mut values); //is also sorting!
+    let avg: f64 = average(&values);
+    let std: f64 = standard_deviation(&values, &avg);
 
     Chart {
         datasets: dss,
-        median: med,
-        average: avg,
-        standard_deviation: std,
+        median: med / divisor,
+        average: avg / divisor,
+        standard_deviation: std / divisor,
     }
 }
 
@@ -412,7 +412,8 @@ fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
             y * y
         })
         .sum::<f64>();
-    f64::sqrt(variance)
+    let d = numbers.len() as f64;
+    f64::sqrt(variance / d)
 }
 
 fn write_raw_data(data: &Vec<ParsedEntry>, out_file: &mut File, prefix: &str, suffix: &str) {
