@@ -46,6 +46,9 @@ pub const DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB: u64 = 8096;
 // charts:
 pub const DEFAULT_FILL: bool = false;
 
+pub const MEGA_BIT_FACTOR: f64 = 1000000.0;
+pub const MULT_DIV_NEUTRAL: f64 = 1.0;
+
 // latency:
 pub const DEFAULT_LATENCY_LABEL: &'static str = "latency";
 pub const DEFAULT_LATENCY_COLOR: &'static str = "green";
@@ -61,22 +64,22 @@ pub const DEFAULT_JITTER_VALUE: u32 = 30;
 // download:
 pub const DEFAULT_DOWNLOAD_LABEL: &'static str = "download";
 pub const DEFAULT_DOWNLOAD_COLOR: &'static str = "green";
-/// in bits per second, note 1 megabit = 1000000 bits bits per second
+/// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_DOWNLOAD_VALUE: f64 = 0.0;
 pub const DEFAULT_EXPECTED_DOWNLOAD_LABEL: &'static str = "expected download";
 pub const DEFAULT_EXPECTED_DOWNLOAD_COLOR: &'static str = "lime";
-/// in bits per second, note 1 megabit = 1000000 bits bits per second
-pub const DEFAULT_EXPECTED_DOWNLOAD_VALUE: f64 = 250000000.0;
+/// in megabits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_EXPECTED_DOWNLOAD_VALUE: f64 = 100.0;
 
 // upload:
 pub const DEFAULT_UPLOAD_LABEL: &'static str = "upload";
 pub const DEFAULT_UPLOAD_COLOR: &'static str = "red";
-/// in bits per second, note 1 megabit = 1000000 bits bits per second
+/// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_UPLOAD_VALUE: f64 = 0.0;
 pub const DEFAULT_EXPECTED_UPLOAD_LABEL: &'static str = "expected upload";
 pub const DEFAULT_EXPECTED_UPLOAD_COLOR: &'static str = "orange";
-/// in bits per second, note 1 megabit = 1000000 bits bits per second
-pub const DEFAULT_EXPECTED_UPLOAD_VALUE: f64 = 25000000.0;
+/// in megabits per second, note 1 megabit = 1000000 bits bits per second
+pub const DEFAULT_EXPECTED_UPLOAD_VALUE: f64 = 25.0;
 
 pub const REPLACEMENT_REGEX: &'static str = r"\$\{([[:alpha:]]|_)*\}";
 pub const REPLACEMENT_ID_STATISTICS: &'static str = "STATISTICS";

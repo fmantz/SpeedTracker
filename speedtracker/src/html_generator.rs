@@ -125,6 +125,7 @@ fn write_output_file(
         .append(false)
         .create(true)
         .write(true)
+        .truncate(true) //overwrite
         .open(output_file)
     {
         Err(e) => {
@@ -234,7 +235,7 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
         .map(|x| x as f64)
         .collect();
 
-    create_chart(dss, &mut values)
+    create_chart(dss, &mut values, MULT_DIV_NEUTRAL)
 }
 
 /// prepare data to show jitter:
@@ -264,7 +265,7 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
         .map(|x| x as f64)
         .collect();
 
-    create_chart(dss, &mut values)
+    create_chart(dss, &mut values, MULT_DIV_NEUTRAL)
 }
 
 /// prepare data to download speed:
@@ -277,7 +278,8 @@ fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> 
                 .performance
                 .as_ref()
                 .map(|p| p.download.unwrap_or(config.default_value))
-                .unwrap();
+                .unwrap()
+                / MEGA_BIT_FACTOR;
             Point { x, y }
         })
         .collect();
@@ -293,7 +295,7 @@ fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> 
         .flatten()
         .collect();
 
-    create_chart(dss, &mut values)
+    create_chart(dss, &mut values, MEGA_BIT_FACTOR)
 }
 
 /// prepare data to upload speed:
@@ -306,7 +308,8 @@ fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Ch
                 .performance
                 .as_ref()
                 .map(|p| p.upload.unwrap_or(config.default_value))
-                .unwrap();
+                .unwrap()
+                / MEGA_BIT_FACTOR;
             Point { x, y }
         })
         .collect();
@@ -322,7 +325,7 @@ fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Ch
         .flatten()
         .collect();
 
-    create_chart(dss, &mut values)
+    create_chart(dss, &mut values, MEGA_BIT_FACTOR)
 }
 
 // helper methods:
@@ -373,10 +376,14 @@ fn create_dataset_expected<T: Copy>(
 }
 
 /// create chart an do some statistics:
-fn create_chart<T: Copy>(dss: Vec<Dataset<T>>, mut values: &mut Vec<f64>) -> Chart<T> {
-    let med: f64 = median(&mut values); //is also sorting!
-    let avg: f64 = average(&values);
-    let std: f64 = standard_deviation(&values, &avg);
+fn create_chart<T: Copy>(
+    dss: Vec<Dataset<T>>,
+    mut values: &mut Vec<f64>,
+    divisor: f64,
+) -> Chart<T> {
+    let med: f64 = median(&mut values) / divisor; //is also sorting!
+    let avg: f64 = average(&values) / divisor;
+    let std: f64 = standard_deviation(&values, &avg) / divisor;
 
     Chart {
         datasets: dss,
@@ -411,25 +418,25 @@ fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
 fn write_raw_data(data: &Vec<ParsedEntry>, out_file: &mut File, prefix: &str, suffix: &str) {
     writeln!(
         out_file,
-        "{}<table id=\"rawdata\">\n
-              <tr>\n
-                  <th class=\"ts\">timestamp</th>\n
-                  <th class=\"client\">client-wlan</th>\n
-                  <th class=\"client\">client-ip</th>\n
-                  <th class=\"client\">client-lat</th>\n
-                  <th class=\"client\">client-lon</th>\n
-                  <th class=\"client\">client-isp</th>\n
-                  <th class=\"server\">server-name</th>\n
-                  <th class=\"server\">server-sponsor</th>\n
-                  <th class=\"server\">server-distance</th>\n
-                  <th class=\"server\">server-host</th>\n
-                  <th class=\"performance\">latency</th>\n
-                  <th class=\"performance\">jitter</th>\n
-                  <th class=\"performance\">download_config</th>\n
-                  <th class=\"performance\">upload_config</th>\n
-                  <th class=\"performance\">download</th>\n
-                  <th class=\"performance\">upload</th>\n
-              </tr>\n",
+        "{}<table id=\"rawdata\">\
+              <tr>\
+                  <th class=\"ts\">timestamp</th>\
+                  <th class=\"client\">client-wlan</th>\
+                  <th class=\"client\">client-ip</th>\
+                  <th class=\"client\">client-lat</th>\
+                  <th class=\"client\">client-lon</th>\
+                  <th class=\"client\">client-isp</th>\
+                  <th class=\"server\">server-name</th>\
+                  <th class=\"server\">server-sponsor</th>\
+                  <th class=\"server\">server-distance</th>\
+                  <th class=\"server\">server-host</th>\
+                  <th class=\"performance\">latency (msecs)</th>\
+                  <th class=\"performance\">jitter (msecs)</th>\
+                  <th class=\"performance\">download_config</th>\
+                  <th class=\"performance\">upload_config</th>\
+                  <th class=\"performance\">download (bits per second)</th>\
+                  <th class=\"performance\">upload (bits per second)</th>\
+              </tr>",
         prefix
     );
     for entry in data {
@@ -507,17 +514,16 @@ fn create_statistics_table(
     stat_upl: String,
 ) -> String {
     format!(
-        "<table id=\"statistic\">\n
-              <tr>\n
-                <th>{}</th>\n
-                <th>{}</th>\n
-              </tr>
-              <tr>\n
-                <td>{}</td>\n
-                <td>{}</td>\n
-              </tr>\n
-            </table>\n
-        ",
+        "<table class=\"statistic\">\
+              <tr>\
+                <td>{}</td>\
+                <td>{}</td>\
+              </tr>\
+              <tr>\
+                <td>{}</td>\
+                <td>{}</td>\
+              </tr>\
+         </table>",
         stat_lat, stat_jit, stat_dwn, stat_upl
     )
 }
@@ -528,21 +534,21 @@ fn create_statistic_table<N: Copy>(
     chart: &Chart<N>,
 ) -> String {
     format!(
-        "<table id=\"statistic_{}\">\n
-              <tr>\n
-                <th colspan=\"3\">{}</th>\n
+        "<table class=\"statistic_{}\">\
+              <tr>\
+                <th colspan=\"3\">{}</th>\
               </tr>
-              <tr>\n
-                <th>{}</th>\n
-                <th>{}</th>\n
-                <th>{}</th>\n
+              <tr>\
+                <th>{}</th>\
+                <th>{}</th>\
+                <th>{}</th>\
               </tr>
-              <tr>\n
-                <td>{}</td>\n
-                <td>{}</td>\n
-                <td>{}</td>\n
-              </tr>\n
-            </table>\n
+              <tr>\
+                <td>{:.3}</td>\
+                <td>{:.3}</td>\
+                <td>{:.3}</td>\
+              </tr>\
+         </table>\
         ",
         id,
         chart_config.label,

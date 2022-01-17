@@ -12,20 +12,80 @@
             -webkit-user-select: none;
             -ms-user-select: none;
         }
+        html, body, div{
+            width: 100%;
+            margin: no;
+        }
+        div {
+            width: 95%;
+            margin: auto;
+            text-align: center;
+        }
+        table {
+         border-collapse: collapse;
+         margin: 0 auto;
+        }
+        th, td {
+            padding: 15px;
+            border-style: solid;
+            border-width: 1pt;
+        }
+        th {
+            text-align: center;
+        }
+        td {
+            text-align: left;
+        }
+        .statistic td {
+            border: none;
+        }
+        .statistic_latency td, .statistic_jitter td, .statistic_download td, .statistic_upload td {
+            border-style: solid;
+            border-width: 1pt;
+            text-align: right;
+        }
+        .statistic_latency {
+          background-color: #BEB2F9;
+        }
+        .statistic_jitter {
+          background-color: #8F7AF9;
+        }
+        .statistic_download {
+          background-color: #81F795;
+        }
+        .statistic_upload {
+          background-color: #EF5233;
+        }
+        .ts {
+          background-color: #F9FCC4;
+        }
+        .client {
+          background-color: #D8D8FD;
+        }
+        .server {
+          background-color: #D8FDE5;
+        }
+        .performance {
+          background-color: #FDDCD8;
+        }
     </style>
 </head>
 
 <body>
-<div style="width:95%;">
+<div>
+    <h1>Statistics</h1>
     ${STATISTICS}
 </div>
-<div style="width:95%;">
+<div>
+    <h1>Response Times</h1>
     <canvas id="canvas_response_times"></canvas>
 </div>
-<div style="width:95%;">
+<div>
+    <h1>Throughput</h1>
     <canvas id="canvas_throughput"></canvas>
 </div>
-<div style="width:95%;">
+<div>
+    <h1>Raw Data</h1>
     ${RAW_DATA}
 </div>
 <script>
