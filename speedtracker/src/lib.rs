@@ -119,7 +119,7 @@ impl Setup {
             file_list
                 .iter()
                 .flat_map(|file| {
-                    parse_output_file(&Path::new(&file), &self.from_date, &self.to_date)
+                    parse_output_file(Path::new(&file), &self.from_date, &self.to_date)
                 })
                 .flatten()
                 .collect()
@@ -128,11 +128,11 @@ impl Setup {
         }
     }
     /// generate html file by transforming data and template:
-    pub fn generate_html(&self, data: &Vec<ParsedEntry>) {
+    pub fn generate_html(&self, data: &[ParsedEntry]) {
         HtmlGenerator::write_html(
             data,
             &Path::new(&self.working_dir).join(TEMPLATE_FILENAME),
-            &Path::new(&self.output_file),
+            Path::new(&self.output_file),
             &self.latency_chart,
             &self.jitter_chart,
             &self.download_chart,
@@ -205,7 +205,7 @@ pub fn read_config(working_dir: &Path) -> Config {
 /// init logger to write in the log file.
 /// rotate log file after log_file_max_length_in_kb
 pub fn init_logger(config: &Config) {
-    match Logger::try_with_str("info")
+    if Logger::try_with_str("info")
         .unwrap()
         .log_to_file(FileSpec::default().directory(&config.log_file))
         .format(opt_format)
@@ -216,10 +216,8 @@ pub fn init_logger(config: &Config) {
             Cleanup::Never,
         )
         .start()
-    {
-        Err(_) => (),
-        Ok(_) => (),
-    }
+        .is_err()
+    {}
 }
 
 /// transform config to setup to run it in mode 1
@@ -274,14 +272,10 @@ pub fn config_to_setup_for_mode_2(
     output_file: &str,
 ) -> Setup {
     //note: console errors are ok here since it is used as console command:
-    let from_date_as_nd = NaiveDate::parse_from_str(from_date, DATE_FORMAT).expect(&format!(
-        "Invalid date format: {} (e.g. 2022-01-15)",
-        from_date
-    ));
-    let to_date_as_nd = NaiveDate::parse_from_str(to_date, DATE_FORMAT).expect(&format!(
-        "Invalid date format: {} (e.g. 2022-01-15)",
-        to_date
-    ));
+    let from_date_as_nd = NaiveDate::parse_from_str(from_date, DATE_FORMAT)
+        .unwrap_or_else(|_| panic!("Invalid date format: {} (e.g. 2022-01-15)", from_date));
+    let to_date_as_nd = NaiveDate::parse_from_str(to_date, DATE_FORMAT)
+        .unwrap_or_else(|_| panic!("Invalid date format: {} (e.g. 2022-01-15)", to_date));
 
     if from_date_as_nd > to_date_as_nd {
         panic!(

@@ -232,7 +232,7 @@ fn create_latency_chart(data: &[ParsedEntry], config: &ChartConfig<u32>) -> Char
         })
         .collect();
 
-    let dss = create_datasets(&config, points);
+    let dss = create_datasets(config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -261,7 +261,7 @@ fn create_jitter_chart(data: &[ParsedEntry], config: &ChartConfig<u32>) -> Chart
         })
         .collect();
 
-    let dss = create_datasets(&config, points);
+    let dss = create_datasets(config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -292,7 +292,7 @@ fn create_download_chart(data: &[ParsedEntry], config: &ChartConfig<f64>) -> Cha
         })
         .collect();
 
-    let dss = create_datasets(&config, points);
+    let dss = create_datasets(config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -322,7 +322,7 @@ fn create_upload_chart(data: &[ParsedEntry], config: &ChartConfig<f64>) -> Chart
         })
         .collect();
 
-    let dss = create_datasets(&config, points);
+    let dss = create_datasets(config, points);
 
     let mut values: Vec<f64> = data
         .iter()
@@ -344,7 +344,7 @@ fn create_datasets<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> V
         .as_ref()
         .map(|c| create_dataset_expected(c, &points));
 
-    let ds = create_dataset(&config, points);
+    let ds = create_dataset(config, points);
     vec![Some(ds), expected_ds].into_iter().flatten().collect()
 }
 
@@ -359,10 +359,7 @@ fn create_dataset<T: Copy>(config: &ChartConfig<T>, points: Vec<Point<T>>) -> Da
 }
 
 /// dataset for expected line:
-fn create_dataset_expected<T: Copy>(
-    config: &ExpectedConfig<T>,
-    points: &Vec<Point<T>>,
-) -> Dataset<T> {
+fn create_dataset_expected<T: Copy>(config: &ExpectedConfig<T>, points: &[Point<T>]) -> Dataset<T> {
     let default_x = &String::from("");
     let first_x: &str = points.first().map(|p| &p.x).unwrap_or(default_x);
     let last_x: &str = points.last().map(|p| &p.x).unwrap_or(default_x);
@@ -384,14 +381,10 @@ fn create_dataset_expected<T: Copy>(
 }
 
 /// create chart an do some statistics:
-fn create_chart<T: Copy>(
-    dss: Vec<Dataset<T>>,
-    mut values: &mut Vec<f64>,
-    divisor: f64,
-) -> Chart<T> {
-    let med: f64 = median(&mut values); //is also sorting!
-    let avg: f64 = average(&values);
-    let std: f64 = standard_deviation(&values, &avg);
+fn create_chart<T: Copy>(dss: Vec<Dataset<T>>, values: &mut Vec<f64>, divisor: f64) -> Chart<T> {
+    let med: f64 = median(values); //is also sorting!
+    let avg: f64 = average(values);
+    let std: f64 = standard_deviation(values, &avg);
 
     Chart {
         datasets: dss,
@@ -407,12 +400,12 @@ fn median(numbers: &mut Vec<f64>) -> f64 {
     numbers[mid]
 }
 
-fn average(numbers: &Vec<f64>) -> f64 {
+fn average(numbers: &[f64]) -> f64 {
     let len: f64 = numbers.len() as f64;
     numbers.iter().sum::<f64>() / len
 }
 
-fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
+fn standard_deviation(numbers: &[f64], average: &f64) -> f64 {
     let variance: f64 = numbers
         .iter()
         .map(|x| {

@@ -70,9 +70,7 @@ pub struct ParsedEntry {
 pub struct JsonParser {}
 impl JsonParser {
     pub fn parse(serialized_json: &str) -> Result<ParsedEntry, Error> {
-        let rs = serde_json::from_str(&serialized_json);
-        //println!("{:?}", rs);
-        rs
+        serde_json::from_str(serialized_json)
     }
 }
 
