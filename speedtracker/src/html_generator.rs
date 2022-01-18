@@ -25,7 +25,7 @@ use std::f64;
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader, Write};
+use std::io::{prelude::*, BufReader, Write};
 use std::path::Path;
 
 use crate::chart_config::*;
