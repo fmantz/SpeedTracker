@@ -120,8 +120,13 @@ fn write_output_file(
     response_time_json: &str,
     throughput_json: &str,
 ) {
+    if data.is_empty() {
+        let msg = "No data found!";
+        log_and_fail(msg);
+    }
+
     // write files:
-    let mut out_file = match fs::OpenOptions::new()
+    let mut out_file: File = match fs::OpenOptions::new()
         .append(false)
         .create(true)
         .write(true)
@@ -130,8 +135,7 @@ fn write_output_file(
     {
         Err(e) => {
             let msg = format!("Could not create file message= '{}'", e);
-            error!("{}", msg);
-            panic!("{}", msg);
+            log_and_fail(&msg);
         }
         Ok(f) => f,
     };
@@ -140,8 +144,7 @@ fn write_output_file(
     match fs::File::open(template_file) {
         Err(e) => {
             let msg = format!("Could not open template file message= '{}'", e);
-            println!("{}", msg);
-            error!("{}", msg);
+            log_and_fail(&msg);
         }
         Ok(f) => {
             let template_reader = BufReader::new(f);
@@ -149,8 +152,7 @@ fn write_output_file(
                 match maybe_line {
                     Err(e) => {
                         let msg = format!("Could not read template file message= '{}'", e);
-                        println!("{}", msg);
-                        error!("{}", msg);
+                        log_and_fail(&msg);
                     }
                     Ok(line) => {
                         match find_replacement.find(&line) {
@@ -202,11 +204,16 @@ fn write_output_file(
     match out_file.flush() {
         Err(e) => {
             let msg = format!("Could not write file message= '{}'", e);
-            error!("{}", msg);
-            panic!("{}", msg);
+            log_and_fail(&msg);
         }
         Ok(()) => (),
     };
+}
+
+fn log_and_fail(msg: &str) -> ! {
+    //return never type!
+    error!("{}", msg);
+    panic!("{}", msg);
 }
 
 /// prepare data to show latency:

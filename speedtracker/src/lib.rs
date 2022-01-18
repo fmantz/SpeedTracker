@@ -320,16 +320,16 @@ fn get_data_file_name(date: &NaiveDate) -> String {
 
 fn check_path_full_access(path: &Path) -> bool {
     if !path.exists() {
-        error!("Path does not exists: {:?}", path);
+        print_and_log_error(format!("Path does not exists: {:?}", path));
         return false;
     }
     let mut rs = true;
     if !path.readable() {
-        error!("No read permission on path: {:?}", path);
+        print_and_log_error(format!("No read permission on path: {:?}", path));
         rs = false;
     }
     if !path.writable() {
-        error!("No write permission on path: {:?}", path);
+        print_and_log_error(format!("No write permission on path: {:?}", path));
         rs = false;
     }
     rs
@@ -339,7 +339,7 @@ fn check_file_full_access(file: &Path) -> bool {
     let dir = match file.parent() {
         Some(d) => d,
         None => {
-            error!("File has an invalid path: {:?}", file);
+            print_and_log_error(format!("File has an invalid path: {:?}", file));
             return false;
         }
     };
@@ -347,11 +347,21 @@ fn check_file_full_access(file: &Path) -> bool {
     if rs {
         if file.exists() {
             if !file.writable() {
-                error!("No write permission for file: {:?}", file);
+                print_and_log_error(format!("No write permission for file: {:?}", file));
             }
         }
     }
     rs
+}
+
+fn print_and_log_error(msg: String) {
+    println!("{}", msg);
+    error!("{}", msg);
+}
+
+fn print_and_log_info(msg: String) {
+    println!("{}", msg);
+    info!("{}", msg);
 }
 
 /// run the speed_test and append the json output to a data_file
@@ -368,36 +378,39 @@ fn run_speed_test(working_dir: &Path, output_file: &Path) {
                     Ok(()) => {
                         if !err_msg.trim().eq("") {
                             // speed_test run normally but could not find a server e.g:
-                            info!(
+                            print_and_log_error(format!(
                                 "run_speed_test ERROR from {} to {} message = '{}'",
                                 start, stop, &err_msg
-                            );
+                            ));
                         } else {
                             // everything is fine:
-                            info!("run_speed_test OK from {} to {}", start, stop);
+                            print_and_log_info(format!(
+                                "run_speed_test OK from {} to {}",
+                                start, stop
+                            ));
                         }
                     }
-                    Err(err) => error!(
+                    Err(err) => print_and_log_error(format!(
                         // could not write speed_test result:
                         "run_speed_test ERROR from {} to {} message = '{}'",
                         start, stop, &err
-                    ),
+                    )),
                 };
             } else {
                 // speed_test crashed:
-                error!(
+                print_and_log_error(format!(
                     "run_speed_test ERROR from {} to {} message = '{}'",
                     start, stop, &err_msg
-                );
+                ));
             }
         }
         // could not get any output speed_test
-        Err(e) => error!(
+        Err(e) => print_and_log_error(format!(
             "run_speed_test ERROR from {} to {} message = '{}'",
             start,
             stop,
             &e.to_string()
-        ),
+        )),
     }
 }
 
