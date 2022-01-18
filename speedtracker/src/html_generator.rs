@@ -159,34 +159,34 @@ fn write_output_file(
                                         write_raw_data(data, &mut out_file, prefix, suffix);
                                     }
                                     REPLACEMENT_ID_STATISTICS => {
-                                        writeln!(
+                                        handle_failed_write(writeln!(
                                             &mut out_file,
                                             "{}{}{}",
                                             prefix, statistics_table, suffix
-                                        );
+                                        ));
                                     }
                                     REPLACEMENT_ID_RESPONSE_TIMES => {
-                                        writeln!(
+                                        handle_failed_write(writeln!(
                                             &mut out_file,
                                             "{}{}{}",
                                             prefix, response_time_json, suffix
-                                        );
+                                        ));
                                     }
                                     REPLACEMENT_ID_THROUGHPUT => {
-                                        writeln!(
+                                        handle_failed_write(writeln!(
                                             &mut out_file,
                                             "{}{}{}",
                                             prefix, throughput_json, suffix
-                                        );
+                                        ));
                                     }
                                     _ => {
                                         //ignore:
-                                        writeln!(&mut out_file, "{}", &line);
+                                        handle_failed_write(writeln!(&mut out_file, "{}", &line));
                                     }
                                 };
                             }
                             None => {
-                                writeln!(&mut out_file, "{}", &line);
+                                handle_failed_write(writeln!(&mut out_file, "{}", &line));
                             }
                         };
                     }
@@ -207,6 +207,14 @@ fn log_and_fail(msg: &str) -> ! {
     //return never type!
     error!("{}", msg);
     panic!("{}", msg);
+}
+
+fn handle_failed_write(rs: Result<(), std::io::Error>) {
+    if let Err(e) = rs {
+        let msg = format!("Write failed message= '{}'", e);
+        error!("{}", msg);
+        panic!("{}", msg);
+    }
 }
 
 /// prepare data to show latency:
@@ -417,7 +425,7 @@ fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
 }
 
 fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffix: &str) {
-    writeln!(
+    handle_failed_write(writeln!(
         out_file,
         "{}<table id=\"rawdata\">\
               <tr>\
@@ -439,16 +447,16 @@ fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffi
                   <th class=\"performance\">upload (bits per second)</th>\
               </tr>",
         prefix
-    );
+    ));
     for entry in data {
-        writeln!(
+        handle_failed_write(writeln!(
             out_file,
             "<tr>
                  <td class=\"ts\">{}</td>",
             entry.timestamp.format(DATE_TIME_FORMAT)
-        );
+        ));
         if let Some(client) = &entry.client {
-            writeln!(
+            handle_failed_write(writeln!(
                 out_file,
                 "<td class=\"client\">{}</td>
                  <td class=\"client\">{}</td>
@@ -460,24 +468,30 @@ fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffi
                 client.lat,
                 client.lon,
                 client.isp
-            );
+            ));
         } else {
-            writeln!(out_file, "<td colspan=\"5\" class=\"client\"></td>");
+            handle_failed_write(writeln!(
+                out_file,
+                "<td colspan=\"5\" class=\"client\"></td>"
+            ));
         }
         if let Some(server) = &entry.server {
-            writeln!(
+            handle_failed_write(writeln!(
                 out_file,
                 "<td class=\"server\">{}</td>
                  <td class=\"server\">{}</td>
                  <td class=\"server\">{}</td>
                  <td class=\"server\">{}</td>",
                 server.name, server.sponsor, server.distance, server.host
-            );
+            ));
         } else {
-            writeln!(out_file, "<td colspan=\"4\" class=\"server\"></td>");
+            handle_failed_write(writeln!(
+                out_file,
+                "<td colspan=\"4\" class=\"server\"></td>"
+            ));
         }
         if let Some(performance) = &entry.performance {
-            writeln!(
+            handle_failed_write(writeln!(
                 out_file,
                 "<td class=\"performance\">{}</td>
                  <td class=\"performance\">{}</td>
@@ -491,13 +505,16 @@ fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffi
                 to_string(&performance.upload_config),
                 to_string(&performance.download),
                 to_string(&performance.upload)
-            );
+            ));
         } else {
-            writeln!(out_file, "<td colspan=\"6\" class=\"performance\"></td>");
+            handle_failed_write(writeln!(
+                out_file,
+                "<td colspan=\"6\" class=\"performance\"></td>"
+            ));
         }
-        writeln!(out_file, "</tr>");
+        handle_failed_write(writeln!(out_file, "</tr>"));
     }
-    writeln!(out_file, "</table>{}", suffix);
+    handle_failed_write(writeln!(out_file, "</table>{}", suffix));
 }
 
 fn to_string<T: Display>(op: &Option<T>) -> String {
