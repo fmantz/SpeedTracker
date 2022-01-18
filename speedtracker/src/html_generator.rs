@@ -58,7 +58,7 @@ struct Chart<N> {
 
 impl HtmlGenerator {
     pub fn write_html(
-        data: &Vec<ParsedEntry>,
+        data: &[ParsedEntry],
         template_file: &Path,
         output_file: &Path,
         config_latency_chart: &ChartConfig<u32>,
@@ -108,7 +108,7 @@ impl HtmlGenerator {
 fn write_output_file(
     template_file: &Path,
     output_file: &Path,
-    data: &Vec<ParsedEntry>,
+    data: &[ParsedEntry],
     statistics_table: &str,
     response_time_json: &str,
     throughput_json: &str,
@@ -210,7 +210,7 @@ fn log_and_fail(msg: &str) -> ! {
 }
 
 /// prepare data to show latency:
-fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
+fn create_latency_chart(data: &[ParsedEntry], config: &ChartConfig<u32>) -> Chart<u32> {
     let points: Vec<Point<u32>> = data
         .iter()
         .map(|d| {
@@ -239,7 +239,7 @@ fn create_latency_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> C
 }
 
 /// prepare data to show jitter:
-fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Chart<u32> {
+fn create_jitter_chart(data: &[ParsedEntry], config: &ChartConfig<u32>) -> Chart<u32> {
     let points: Vec<Point<u32>> = data
         .iter()
         .map(|d| {
@@ -269,7 +269,7 @@ fn create_jitter_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<u32>) -> Ch
 }
 
 /// prepare data to download speed:
-fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+fn create_download_chart(data: &[ParsedEntry], config: &ChartConfig<f64>) -> Chart<f64> {
     let points: Vec<Point<f64>> = data
         .iter()
         .map(|d| {
@@ -299,7 +299,7 @@ fn create_download_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> 
 }
 
 /// prepare data to upload speed:
-fn create_upload_chart(data: &Vec<ParsedEntry>, config: &ChartConfig<f64>) -> Chart<f64> {
+fn create_upload_chart(data: &[ParsedEntry], config: &ChartConfig<f64>) -> Chart<f64> {
     let points: Vec<Point<f64>> = data
         .iter()
         .map(|d| {
@@ -416,7 +416,7 @@ fn standard_deviation(numbers: &Vec<f64>, average: &f64) -> f64 {
     f64::sqrt(variance / d)
 }
 
-fn write_raw_data(data: &Vec<ParsedEntry>, out_file: &mut File, prefix: &str, suffix: &str) {
+fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffix: &str) {
     writeln!(
         out_file,
         "{}<table id=\"rawdata\">\

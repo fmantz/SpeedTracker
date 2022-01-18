@@ -23,7 +23,6 @@
 
 use chrono::NaiveDate;
 use chrono::{Duration, Local};
-use confy;
 use confy::ConfyError;
 use faccess::PathExt;
 use flexi_logger::*;
@@ -253,8 +252,8 @@ pub fn config_to_setup_for_mode_1(working_dir: &Path, config: Config) -> Setup {
     Setup {
         data_dir: config.data_dir,
         new_data_file: Some(new_data_file),
-        first_filter_file_name: first_filter_file_name,
-        last_filter_file_name: last_filter_file_name,
+        first_filter_file_name,
+        last_filter_file_name,
         from_date: pastday,
         to_date: today,
         output_file: config.output_file,
@@ -297,8 +296,8 @@ pub fn config_to_setup_for_mode_2(
     Setup {
         data_dir: config.data_dir,
         new_data_file: None,
-        first_filter_file_name: first_filter_file_name,
-        last_filter_file_name: last_filter_file_name,
+        first_filter_file_name,
+        last_filter_file_name,
         from_date: from_date_as_nd,
         to_date: to_date_as_nd,
         output_file: output_file.to_string(),
@@ -343,12 +342,8 @@ fn check_file_full_access(file: &Path) -> bool {
         }
     };
     let rs = check_path_full_access(dir);
-    if rs {
-        if file.exists() {
-            if !file.writable() {
-                print_and_log_error(format!("No write permission for file: {:?}", file));
-            }
-        }
+    if rs && file.exists() && !file.writable() {
+        print_and_log_error(format!("No write permission for file: {:?}", file));
     }
     rs
 }
