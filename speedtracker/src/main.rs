@@ -26,9 +26,8 @@ use std::env;
 use std::path::Path;
 use std::process;
 
-use crate::constants::*;
-
-mod constants;
+pub const PROGRAM_NAME: &str = "speedtracker";
+pub const EXIT_SUCCESS: i32 = 0;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

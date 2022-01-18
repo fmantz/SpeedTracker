@@ -22,10 +22,10 @@
 //
 
 use chrono::NaiveDate;
-use chrono::{Duration, Local, TimeZone};
+use chrono::{Duration, Local};
 use confy;
 use confy::ConfyError;
-use faccess::{PathExt};
+use faccess::PathExt;
 use flexi_logger::*;
 use log::*;
 use serde::{Deserialize, Serialize};
@@ -37,17 +37,16 @@ use std::path::Path;
 
 use std::process::Command;
 
-
 use crate::chart_config::*;
-use crate::constants::*;
 use crate::html_generator::HtmlGenerator;
 use crate::json_parser::JsonParser;
 use crate::json_parser::ParsedEntry;
+use crate::lib_constants::*;
 
 mod chart_config;
-mod constants;
 mod html_generator;
 mod json_parser;
+mod lib_constants;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {

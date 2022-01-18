@@ -21,26 +21,22 @@
 // SOFTWARE.
 //
 
-// program names:
-pub const PROGRAM_NAME: &'static str = "speedtracker";
-pub const EXIT_SUCCESS: i32 = 0;
-
-pub const SPEED_TEST_CMD: &'static str = "speedtestJson";
+pub const SPEED_TEST_CMD: &str = "speedtestJson";
 
 // file names:
-pub const CONFIG_FILENAME: &'static str = "speedtracker.toml";
-pub const TEMPLATE_FILENAME: &'static str = "template.html";
+pub const CONFIG_FILENAME: &str = "speedtracker.toml";
+pub const TEMPLATE_FILENAME: &str = "template.html";
 
 // date formats:
-pub const DATE_FILE_NAME_FORMAT: &'static str = "%Y-%m-DATA.json";
-pub const DATE_FORMAT: &'static str = "%Y-%m-%d";
-pub const DATE_TIME_FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
+pub const DATE_FILE_NAME_FORMAT: &str = "%Y-%m-DATA.json";
+pub const DATE_FORMAT: &str = "%Y-%m-%d";
+pub const DATE_TIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 // config defaults:
-pub const DEFAULT_DATA_DIR: &'static str = "./";
-pub const DEFAULT_OUTPUT_FILE: &'static str = "./index.html";
+pub const DEFAULT_DATA_DIR: &str = "./";
+pub const DEFAULT_OUTPUT_FILE: &str = "./index.html";
 pub const DEFAULT_OUTPUT_XDAYS: u32 = 14;
-pub const DEFAULT_LOG_FILE: &'static str = "./speedtracker.log";
+pub const DEFAULT_LOG_FILE: &str = "./speedtracker.log";
 pub const DEFAULT_LOG_FILE_MAX_LENGTH_IN_KB: u64 = 8096;
 
 // charts:
@@ -50,48 +46,48 @@ pub const MEGA_BIT_FACTOR: f64 = 1000000.0;
 pub const MULT_DIV_NEUTRAL: f64 = 1.0;
 
 // latency:
-pub const DEFAULT_LATENCY_LABEL: &'static str = "latency";
-pub const DEFAULT_LATENCY_COLOR: &'static str = "green";
+pub const DEFAULT_LATENCY_LABEL: &str = "latency";
+pub const DEFAULT_LATENCY_COLOR: &str = "green";
 /// in milliseconds
 pub const DEFAULT_LATENCY_VALUE: u32 = 100;
 
 // jitter:
-pub const DEFAULT_JITTER_LABEL: &'static str = "jitter";
-pub const DEFAULT_JITTER_COLOR: &'static str = "red";
+pub const DEFAULT_JITTER_LABEL: &str = "jitter";
+pub const DEFAULT_JITTER_COLOR: &str = "red";
 /// in milliseconds
 pub const DEFAULT_JITTER_VALUE: u32 = 100;
 
 // download:
-pub const DEFAULT_DOWNLOAD_LABEL: &'static str = "download";
-pub const DEFAULT_DOWNLOAD_COLOR: &'static str = "green";
+pub const DEFAULT_DOWNLOAD_LABEL: &str = "download";
+pub const DEFAULT_DOWNLOAD_COLOR: &str = "green";
 /// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_DOWNLOAD_VALUE: f64 = 0.0;
-pub const DEFAULT_EXPECTED_DOWNLOAD_LABEL: &'static str = "expected download";
-pub const DEFAULT_EXPECTED_DOWNLOAD_COLOR: &'static str = "lime";
+pub const DEFAULT_EXPECTED_DOWNLOAD_LABEL: &str = "expected download";
+pub const DEFAULT_EXPECTED_DOWNLOAD_COLOR: &str = "lime";
 /// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_EXPECTED_DOWNLOAD_VALUE: f64 = 250.0;
 
 // upload:
-pub const DEFAULT_UPLOAD_LABEL: &'static str = "upload";
-pub const DEFAULT_UPLOAD_COLOR: &'static str = "red";
+pub const DEFAULT_UPLOAD_LABEL: &str = "upload";
+pub const DEFAULT_UPLOAD_COLOR: &str = "red";
 /// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_UPLOAD_VALUE: f64 = 0.0;
-pub const DEFAULT_EXPECTED_UPLOAD_LABEL: &'static str = "expected upload";
-pub const DEFAULT_EXPECTED_UPLOAD_COLOR: &'static str = "orange";
+pub const DEFAULT_EXPECTED_UPLOAD_LABEL: &str = "expected upload";
+pub const DEFAULT_EXPECTED_UPLOAD_COLOR: &str = "orange";
 /// in megabits per second, note 1 megabit = 1000000 bits bits per second
 pub const DEFAULT_EXPECTED_UPLOAD_VALUE: f64 = 25.0;
 
-pub const REPLACEMENT_REGEX: &'static str = r"\$\{([[:alpha:]]|_)*\}";
-pub const REPLACEMENT_ID_STATISTICS: &'static str = "STATISTICS";
-pub const REPLACEMENT_ID_RESPONSE_TIMES: &'static str = "RESPONSE_TIMES";
-pub const REPLACEMENT_ID_THROUGHPUT: &'static str = "THROUGHPUT";
-pub const REPLACEMENT_ID_RAW_DATA: &'static str = "RAW_DATA";
+pub const REPLACEMENT_REGEX: &str = r"\$\{([[:alpha:]]|_)*\}";
+pub const REPLACEMENT_ID_STATISTICS: &str = "STATISTICS";
+pub const REPLACEMENT_ID_RESPONSE_TIMES: &str = "RESPONSE_TIMES";
+pub const REPLACEMENT_ID_THROUGHPUT: &str = "THROUGHPUT";
+pub const REPLACEMENT_ID_RAW_DATA: &str = "RAW_DATA";
 
-pub const ID_LATENCY: &'static str = "latency";
-pub const ID_JITTER: &'static str = "jitter";
-pub const ID_DOWNLOAD: &'static str = "download";
-pub const ID_UPLOAD: &'static str = "upload";
+pub const ID_LATENCY: &str = "latency";
+pub const ID_JITTER: &str = "jitter";
+pub const ID_DOWNLOAD: &str = "download";
+pub const ID_UPLOAD: &str = "upload";
 
-pub const STATISTIC_MEDIAN: &'static str = "median";
-pub const STATISTIC_AVG: &'static str = "average";
-pub const STATISTIC_STD: &'static str = "standard-deviation";
+pub const STATISTIC_MEDIAN: &str = "median";
+pub const STATISTIC_AVG: &str = "average";
+pub const STATISTIC_STD: &str = "standard-deviation";

@@ -29,8 +29,8 @@ use std::io::{prelude::*, BufReader, Write};
 use std::path::Path;
 
 use crate::chart_config::*;
-use crate::constants::*;
 use crate::json_parser::*;
+use crate::lib_constants::*;
 
 pub struct HtmlGenerator {}
 
@@ -54,13 +54,6 @@ struct Chart<N> {
     median: f64,
     average: f64,
     standard_deviation: f64,
-}
-
-struct ChartContainer {
-    latency: Chart<u32>,
-    jitter: Chart<u32>,
-    download: Chart<f64>,
-    upload: Chart<f64>,
 }
 
 impl HtmlGenerator {
