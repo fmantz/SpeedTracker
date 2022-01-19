@@ -1,0 +1,41 @@
+data_dir = '/root/data'
+output_file = '/usr/local/apache2/htdocs/index.html'
+output_xdays = 14
+log_file = '/root/speedtracker.log'
+log_file_max_length_in_kb = 8096
+
+[latency_chart]
+label = 'latency'
+fill = false
+border_color = 'green'
+default_value = 100
+
+[jitter_chart]
+label = 'jitter'
+fill = false
+border_color = 'red'
+default_value = 100
+
+[download_chart]
+label = 'download'
+fill = false
+border_color = 'green'
+default_value = 0.0
+
+[download_chart.expected_value]
+label = 'expected download'
+fill = false
+border_color = 'lime'
+value = 250.0
+
+[upload_chart]
+label = 'upload'
+fill = false
+border_color = 'red'
+default_value = 0.0
+
+[upload_chart.expected_value]
+label = 'expected upload'
+fill = false
+border_color = 'orange'
+value = 25.0

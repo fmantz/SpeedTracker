@@ -1,0 +1,5 @@
+# bash
+
+
+# dummy file to avoid error message on the console
+# 'iwgetid' is only useful when the program runs without docker connected by wlan

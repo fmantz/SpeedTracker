@@ -8,8 +8,6 @@ RUN apt-get -qq --yes update
 
 # Packages needed to compile
 RUN apt-get -qq --yes install wget build-essential g++ cmake
-
-# Packages needed to run
 RUN apt-get -qq --yes install libcurl4-openssl-dev libxml2 libxml2-dev libssl-dev
 
 # Install RUST:
@@ -41,6 +39,8 @@ RUN set -eux; \
 # Build rust application
 COPY ./ ./
 RUN cargo build --release
+
+# Build c++ application
 RUN cd ./SpeedTest && cmake -DCMAKE_BUILD_TYPE=Release . && make
 
 ##
@@ -50,7 +50,22 @@ RUN cd ./SpeedTest && cmake -DCMAKE_BUILD_TYPE=Release . && make
 #Image step:
 FROM httpd:2.4
 WORKDIR /root/
+RUN apt-get -qq --yes update
+
+# Packages needed to run
+RUN apt-get -qq --yes install libcurl4-openssl-dev libxml2 libxml2-dev libssl-dev curl
+
+RUN mkdir /root/data
+RUN mkdir /root/log
+
+RUN chmod u+w /usr/local/apache2/htdocs/
+RUN chmod u+w /usr/local/apache2/htdocs/index.html
 
 COPY --from=0 /speedtest/SpeedTest/speedtestJson ./
 COPY --from=0 /speedtest/target/release/speedtracker ./
-COPY --from=0 /speedtest/speedtracker/src/template.html ./
+
+COPY --from=0 /speedtest/docker_files/template.html ./
+COPY --from=0 /speedtest/docker_files/speedtracker.toml ./
+COPY --from=0 /speedtest/docker_files/iwgetid  /usr/sbin/iwgetid
+
+COPY --from=0 /speedtest/jslibs/*.js /usr/local/apache2/htdocs/

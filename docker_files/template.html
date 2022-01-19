@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<!--
+// MIT License
+//
+// Copyright (c) 2022 Florian Mantz
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+-->
+<head>
+    <title>SpeedTracker</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <script src="moment.min.js"></script>
+    <script src="jquery.min.js"></script>
+    <script src="Chart.bundle.js"></script>
+    <style>
+        canvas {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+        html, body, div{
+            width: 100%;
+            margin: no;
+        }
+        div {
+            width: 95%;
+            margin: auto;
+            text-align: center;
+        }
+        table {
+         border-collapse: collapse;
+         margin: 0 auto;
+        }
+        th, td {
+            padding: 15px;
+            border-style: solid;
+            border-width: 1pt;
+        }
+        th {
+            text-align: center;
+        }
+        td {
+            text-align: left;
+        }
+        .statistic td {
+            border: none;
+        }
+        .statistic_latency td, .statistic_jitter td, .statistic_download td, .statistic_upload td {
+            border-style: solid;
+            border-width: 1pt;
+            text-align: right;
+        }
+        .statistic_latency {
+          background-color: #BEB2F9;
+        }
+        .statistic_jitter {
+          background-color: #8F7AF9;
+        }
+        .statistic_download {
+          background-color: #81F795;
+        }
+        .statistic_upload {
+          background-color: #EF5233;
+        }
+        .ts {
+          background-color: #F9FCC4;
+        }
+        .client {
+          background-color: #D8D8FD;
+        }
+        .server {
+          background-color: #D8FDE5;
+        }
+        .performance {
+          background-color: #FDDCD8;
+        }
+    </style>
+</head>
+
+<body>
+<div>
+    <h1>Statistics (in ms)</h1>
+    ${STATISTICS}
+</div>
+<div>
+    <h1>Response Times (in MBit/s)</h1>
+    <canvas id="canvas_response_times"></canvas>
+</div>
+<div>
+    <h1>Throughput</h1>
+    <canvas id="canvas_throughput"></canvas>
+</div>
+<div>
+    <h1>Raw Data</h1>
+    ${RAW_DATA}
+</div>
+<script>
+
+    var timeFormat = 'YYYY-MM-DD HH:mm:ss';
+    var timeFormatReduced = 'YYYY-MM-DD HH:mm';
+
+    var config_response_times = {
+        type:    'line',
+        data:    {
+            datasets: ${RESPONSE_TIMES}
+        },
+        options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Chart.js Time Scale"
+            },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    ticks: {
+                      autoSkip: true,
+                      maxTicksLimit: 14
+                    },
+                    time:       {
+                        format: timeFormat,
+                        tooltipFormat: 'll',
+                        displayFormat: timeFormatReduced
+                    },
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'value'
+                    }
+                }]
+            }
+        }
+    };
+
+    var config_throughput = {
+        type:    'line',
+        data:    {
+            datasets: ${THROUGHPUT}
+        },
+        options: {
+            responsive: true,
+            title:      {
+                display: true,
+                text:    "Chart.js Time Scale"
+            },
+            scales:     {
+                xAxes: [{
+                    type:       "time",
+                    ticks: {
+                      autoSkip: true,
+                      maxTicksLimit: 14
+                    },
+                    time:       {
+                        format: timeFormat,
+                        tooltipFormat: 'll',
+                        displayFormat: timeFormatReduced
+                    },
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'Date'
+                    }
+                }],
+                yAxes: [{
+                    scaleLabel: {
+                        display:     true,
+                        labelString: 'value'
+                    }
+                }]
+            }
+        }
+    };
+
+    window.onload = function () {
+        var ctx_response_times = document.getElementById("canvas_response_times").getContext("2d");
+        window.myLine = new Chart(ctx_response_times, config_response_times);
+
+        var ctx_throughput = document.getElementById("canvas_throughput").getContext("2d");
+        window.myLine = new Chart(ctx_throughput, config_throughput);
+    };
+
+</script>
+
+</body>
+
+</html>
