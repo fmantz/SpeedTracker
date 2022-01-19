@@ -1,14 +1,18 @@
-FROM httpd:2.4
+##
+## BUILD SECTION
+##
 
+FROM httpd:2.4
+WORKDIR /speedtest
 RUN apt-get -qq --yes update
 
-#Packages needed to compile
+# Packages needed to compile
 RUN apt-get -qq --yes install wget build-essential g++ cmake
 
-#Packages needed to run
+# Packages needed to run
 RUN apt-get -qq --yes install libcurl4-openssl-dev libxml2 libxml2-dev libssl-dev
 
-#Install RUST:
+# Install RUST:
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
@@ -34,8 +38,19 @@ RUN set -eux; \
     cargo --version; \
     rustc --version;
 
-#Build rust application
-COPY ./ .
+# Build rust application
+COPY ./ ./
 RUN cargo build --release
 RUN cd ./SpeedTest && cmake -DCMAKE_BUILD_TYPE=Release . && make
 
+##
+## FINAL IMAGE SECTION
+##
+
+#Image step:
+FROM httpd:2.4
+WORKDIR /root/
+
+COPY --from=0 /speedtest/SpeedTest/speedtestJson ./
+COPY --from=0 /speedtest/target/release/speedtracker ./
+COPY --from=0 /speedtest/speedtracker/src/template.html ./
