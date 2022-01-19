@@ -37,3 +37,10 @@ speedtracker 2022-01-01 2021-12-31 ./index.html
 2. read config file to get 'data_dir'.
 3. read and filter files(s) to get the data of the dates 'from_date' - 'to_date'
 4. transform into a self-containing html.page at location 'output_file' (given as command parameter).
+
+
+#Required Software:
+
+ - package wireless-tools.dep  (iwgetid)  (for local mode and WLAN connection, required if the WLAN ID should be in the output)
+ - requirements from SpeedTest
+ - any webserver to 
