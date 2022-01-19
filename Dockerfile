@@ -52,14 +52,12 @@ FROM httpd:2.4
 WORKDIR /root/
 RUN apt-get -qq --yes update
 
-# Packages needed to run
-RUN apt-get -qq --yes install libcurl4-openssl-dev libxml2 libxml2-dev libssl-dev curl
-
 RUN mkdir /root/data
 RUN mkdir /root/log
 
-RUN chmod u+w /usr/local/apache2/htdocs/
+RUN chown root:root /usr/local/apache2/htdocs/index.html
 RUN chmod u+w /usr/local/apache2/htdocs/index.html
+RUN chmod u+w /usr/local/apache2/htdocs/
 
 COPY --from=0 /speedtest/SpeedTest/speedtestJson ./
 COPY --from=0 /speedtest/target/release/speedtracker ./
