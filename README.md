@@ -18,7 +18,7 @@ It will do:
     - output_xdays : number of days in the past (from today) the data should be visualized
     - log_file     : logfile name
 
-2. start "speedtestJson" and append its output at the file of the current month in 'data_dir'.visualize
+2. start "speedtestJson" and append its output at the file of the current month in 'data_dir'.
 3. read and filter files(s) to get the data of the last 'output_xdays'.
 4. transform into a self-containing html.page at location 'output_file'.
 
@@ -39,8 +39,45 @@ speedtracker 2022-01-01 2021-12-31 ./index.html
 4. transform into a self-containing html.page at location 'output_file' (given as command parameter).
 
 
-#Required Software:
+## Required Software:
 
  - package wireless-tools.dep  (iwgetid)  (for local mode and WLAN connection, required if the WLAN ID should be in the output)
  - requirements from SpeedTest
  - any webserver to 
+
+## Raspberry Pi
+
+1. install rust & compile speedtracker 
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+cargo build --release
+```
+
+TODO
+
+2. install speedtracker [./SpeedTest/README.md](./SpeedTest/README.md)
+3. copy "target/release/speedtracker" and "SpeedTest/speedtestJson" into one new directory e.g. "/opt/speedtracker"
+4. copy "speedtracker/src/template.html" into "/opt/speedtracker"
+5. copy "docker_files/speedtracker.toml" into "/opt/speedtracker" 
+6. create a cronjob "/opt/speedtracker run" scheduled as you like
+7. modify /speedtracker.toml
+   1. modify 'data_dir' (best practice: a directory on usb thumb drive not the sdcard) 
+   2. modify 'log_file'
+   3. 
+   
+## Docker:
+
+If you don't wan to run SpeedTracker on a Raspberry Pi but on a 
+
+### Build:
+
+```bash
+docker build . --tag speedtracker:0.1.0 
+```
+
+### Run:
+
+```bash
+docker run -dit --name mySpeedTracker -p 8080:80 speedtracker:0.1.0
+```
+
