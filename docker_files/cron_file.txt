@@ -1,0 +1,2 @@
+#run every two hours
+0 */2 * * * /root/speedtracker run

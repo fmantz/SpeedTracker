@@ -52,18 +52,30 @@ FROM httpd:2.4
 WORKDIR /root/
 RUN apt-get -qq --yes update
 
+#Packages needed to run:
+RUN apt-get -qq --yes install cron
+
 RUN mkdir /root/data
-RUN mkdir /root/log
 
 RUN chown root:root /usr/local/apache2/htdocs/index.html
 RUN chmod u+w /usr/local/apache2/htdocs/index.html
 RUN chmod u+w /usr/local/apache2/htdocs/
 
-COPY --from=0 /speedtest/SpeedTest/speedtestJson ./
-COPY --from=0 /speedtest/target/release/speedtracker ./
+COPY --from=0 /speedtest/SpeedTest/speedtestJson        ./
+COPY --from=0 /speedtest/target/release/speedtracker    ./
 
-COPY --from=0 /speedtest/docker_files/template.html ./
+COPY --from=0 /speedtest/docker_files/template.html     ./
 COPY --from=0 /speedtest/docker_files/speedtracker.toml ./
-COPY --from=0 /speedtest/docker_files/iwgetid  /usr/sbin/iwgetid
+COPY --from=0 /speedtest/docker_files/entrypoint.sh     ./
+COPY --from=0 /speedtest/docker_files/iwgetid           /usr/sbin/iwgetid
+COPY --from=0 /speedtest/docker_files/cron_file.txt     /etc/cron.d/speedtracker_crontab
 
 COPY --from=0 /speedtest/jslibs/*.js /usr/local/apache2/htdocs/
+
+# run speedtracker via crontab
+RUN chmod 0644 /etc/cron.d/speedtracker_crontab
+RUN crontab /etc/cron.d/speedtracker_crontab
+
+# Run crond and apache on container startup:
+RUN chmod 700 entrypoint.sh
+ENTRYPOINT ["bash", "/root/entrypoint.sh"]
