@@ -29,7 +29,7 @@ it does:
 speedtracker 2022-01-01 2021-12-31 ./index.html
 ```
 
-note: the purpose is to visualize historic data from e.g. two month ago. 
+note: the purpose of this mode is to visualize historic data from e.g. two month ago. 
 
 it does:
 
@@ -88,31 +88,31 @@ value = 250.0   <- your expected download speed, it is in Mbits/s (only used to 
 [upload_chart.expected_value]
 value = 25.0    <- your expected upload speed, it is in Mbits/s (only used to display a baseline)
 ```
-9. ensure that all location you specified above are writable
+9. ensure that all file locations you specified above are writable
 10. enjoy and wait for your collected data
 
-## Install with Docker (without dockerhub):
+## Install with Docker 
 
 If you do not want to run SpeedTracker on a Raspberry Pi but on a NAS, you can use docker.
 Settings you might want to change are in directory  [./docker_files](./docker_files).
 (see Install on a Raspberry Pi).  
 
-### Build:
+### Build & Run:
+
+Either build it yourself via:
 
 ```bash
 docker build . --tag speedtracker:0.1.0 
-```
-
-### Run:
-
-```bash
 docker run -dit --name mySpeedTracker -p 8080:80 speedtracker:0.1.0
 ```
 
-## Install with Docker (dockerhub):
+or pull the ready to run container from dockerhub:
+
+### Pull & Run:
 
 ```bash
-docker run -dit --name mySpeedTracker -p 8080:80 speedtracker:0.1.0
+docker pull fmantz/speedtracker
+docker run -dit --name mySpeedTracker -p 8080:80 fmantz/speedtracker
 ```
 
 ## License
