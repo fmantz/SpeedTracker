@@ -433,10 +433,10 @@ fn write_raw_data(data: &[ParsedEntry], out_file: &mut File, prefix: &str, suffi
                   <th class=\"client\">client-isp</th>\
                   <th class=\"server\">server-name</th>\
                   <th class=\"server\">server-sponsor</th>\
-                  <th class=\"server\">server-distance</th>\
+                  <th class=\"server\">server-distance (km)</th>\
                   <th class=\"server\">server-host</th>\
-                  <th class=\"performance\">latency (msecs)</th>\
-                  <th class=\"performance\">jitter (msecs)</th>\
+                  <th class=\"performance\">latency (ms)</th>\
+                  <th class=\"performance\">jitter (ms)</th>\
                   <th class=\"performance\">download_config</th>\
                   <th class=\"performance\">upload_config</th>\
                   <th class=\"performance\">download (bits per second)</th>\
