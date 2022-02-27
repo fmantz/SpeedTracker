@@ -1,0 +1,12 @@
+version: "3.0"
+services:
+    speedtracker:
+      container_name: speedtracker
+      image: fmantz/speedtracker:latest
+      restart: unless-stopped
+      ports:
+        - "8888:80/tcp"
+      volumes:
+        - ./data:/root/data
+        - ./docker_files/speedtracker.toml:/root/speedtracker.toml
+  
