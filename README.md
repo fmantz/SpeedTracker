@@ -51,7 +51,7 @@ it does:
 
 ## Required Software:
 
- - package wireless-tools.dep  (iwgetid)  (if the WLAN SSID should be in the output)
+ - package wireless-tools (.deb) for command "iwgetid" (if the WLAN SSID should be in the output)
  - requirements from SpeedTest (see README.md of linked SpeedTest)
  - any webserver to serve static data
 
