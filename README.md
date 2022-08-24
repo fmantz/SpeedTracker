@@ -65,8 +65,9 @@ git clone --recurse-submodules https://github.com/fmantz/SpeedTracker.git
 
 1. install rust and compile speedtracker 
 ```bash
-cd speedtracker
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+cd speedtracker
 cargo build --release
 ```
 
