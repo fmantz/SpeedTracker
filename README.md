@@ -71,7 +71,7 @@ cd speedtracker
 cargo build --release
 ```
 
-2. compile and install SpeedTest (see [./SpeedTest/README.md](./SpeedTest/README.md) of linked SpeedTest repository)
+2. compile and install SpeedTest (see [https://github.com/fmantz/SpeedTest#readme](./SpeedTest/README.md) of linked SpeedTest repository)
 
 3. copy "target/release/speedtracker" and "SpeedTest/speedtestJson" into one new directory e.g. "/opt/speedtracker"
 
