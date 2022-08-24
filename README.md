@@ -58,24 +58,38 @@ it does:
 ## Install on a Raspberry Pi
 
 0. Ensure that you cloned this repository including submodules
-1. install rust & compile speedtracker 
+
 ```bash
+git clone --recurse-submodules https://github.com/fmantz/SpeedTracker.git
+```
+
+1. install rust and compile speedtracker 
+```bash
+cd speedtracker
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo build --release
 ```
-2. install speedtracker (see README.md of linked SpeedTest)
+
+2. compile and install SpeedTest (see [./SpeedTest/README.md](./SpeedTest/README.md) of linked SpeedTest repository)
+
 3. copy "target/release/speedtracker" and "SpeedTest/speedtestJson" into one new directory e.g. "/opt/speedtracker"
+
 4. copy "pi_files" into "/opt/speedtracker"
+
 5. create a cronjob for speedtracker via 'crontab -e' e.g.:
+
 ```bash
 #run every two hours
-0 */2 * * * /root/speedtracker run
+0 */2 * * * /opt/speedtracker run
 ```
-7. install a webserver e.g. apache
+
+6. install a webserver e.g. apache
 ```bash
 sudo apt-get install apache
 ```
-8. modify /speedtracker.toml, interesting settings are:
+
+7. modify /speedtracker.toml, interesting settings are:
+
 ```bash
 data_dir = './'  <- your data files are stored here, best practice not on the sdcard but on a usb thumb drive 
 output_file = '/var/www/html/index.html',  <- your output file must be served by the webserver, so pick a directory that is served
@@ -88,8 +102,10 @@ value = 250.0   <- your expected download speed, it is in Mbits/s (only used to 
 [upload_chart.expected_value]
 value = 25.0    <- your expected upload speed, it is in Mbits/s (only used to display a baseline)
 ```
-9. ensure that all file locations you specified above are writable
-10. enjoy and wait for your collected data
+
+8. ensure that all file locations you specified above are writable
+
+9. enjoy and wait for your collected data
 
 ## Install with Docker 
 
